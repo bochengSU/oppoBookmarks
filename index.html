@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的書籤 (v4.0 專業版)</title>
+    <title>我的書籤 (v5.5 修正版)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
+        /* 讓觸控操作更流暢，但允許頁面滾動 */
+        html, body {
+            -webkit-touch-callout: none; /* iOS Safari: 禁用長按選單 */
+        }
         /* Basic Reset & Font */
         body {
             font-family: 'Noto Sans TC', sans-serif;
@@ -17,131 +21,71 @@
             color: #333;
             line-height: 1.6;
         }
-        /* Main Container for the Bookmarks */
         .bookmark-container {
-            max-width: 900px;
-            margin: 20px auto;
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            max-width: 900px; margin: 20px auto; background-color: #ffffff; padding: 30px;
+            border-radius: 12px; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         }
         h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 2.2em;
-            font-weight: 700;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 15px;
+            color: #2c3e50; text-align: center; margin-bottom: 20px; font-size: 2.2em;
+            font-weight: 700; border-bottom: 2px solid #e0e0e0; padding-bottom: 15px;
         }
-        /* Styling for the main list and nested lists */
-        .bookmark-list {
-            list-style-type: none;
-            padding-left: 0;
-            margin: 0;
-        }
-        .bookmark-list ul {
-            list-style-type: none;
-            padding-left: 25px;
-            margin: 5px 0;
-        }
-        /* Styling for each bookmark item */
+        .bookmark-list { list-style-type: none; padding-left: 0; margin: 0; }
+        .bookmark-list ul { list-style-type: none; padding-left: 25px; margin: 5px 0; }
         .bookmark-item {
-            margin-bottom: 2px; /* 減小間距，讓縫隙更自然 */
+            margin-bottom: 2px;
             position: relative;
+            /* --- 修改點 START (CSS 優化) --- */
+            touch-action: manipulation; /* 提示瀏覽器此區域主要用於操作，減少觸控延遲 */
+            /* --- 修改點 END --- */
         }
-        /* Styling for folder (details/summary) */
+        #bookmark-list-root > .bookmark-item {
+            margin-bottom: 12px;
+        }
         .bookmark-folder-details {
-            margin-top: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            background-color: #fcfcfc;
-            overflow: hidden;
+            margin-top: 10px; margin-bottom: 10px; border: 1px solid #e0e0e0;
+            border-radius: 8px; background-color: #fcfcfc; overflow: hidden;
         }
-        .bookmark-folder-details[open] > summary {
-            background-color: #e8f0fe;
-            border-bottom: 1px solid #d0d0d0;
-        }
+        .bookmark-folder-details[open] > summary { background-color: #e8f0fe; border-bottom: 1px solid #d0d0d0; }
         .bookmark-folder-summary {
-            font-weight: 700;
-            cursor: pointer;
-            padding: 12px 15px;
-            background-color: #f0f8ff;
-            color: #34495e;
-            display: flex;
-            align-items: center;
-            user-select: none;
+            font-weight: 700; cursor: pointer; padding: 12px 15px; background-color: #f0f8ff;
+            color: #34495e; display: flex; align-items: center; user-select: none;
             transition: background-color 0.2s ease-in-out;
         }
-        .bookmark-folder-summary:hover {
-            background-color: #e8f0fe;
-        }
-        .bookmark-folder-summary h3 {
-            margin: 0;
-            font-size: 1.1em;
-            display: inline-block;
-            padding-left: 5px;
-        }
+        .bookmark-folder-summary:hover { background-color: #e8f0fe; }
+        .bookmark-folder-summary h3 { margin: 0; font-size: 1.1em; display: inline-block; padding-left: 5px; }
         .bookmark-folder-details summary::-webkit-details-marker { display: none; }
         .bookmark-folder-details summary::before {
-            content: "▶";
-            display: inline-block;
-            margin-right: 10px;
-            transition: transform 0.2s ease-in-out;
-            font-size: 0.8em;
+            content: "▶"; display: inline-block; margin-right: 10px;
+            transition: transform 0.2s ease-in-out; font-size: 0.8em;
         }
         .bookmark-folder-details[open] summary::before { transform: rotate(90deg); }
-        /* Styling for individual links */
         .bookmark-link {
-            display: flex;
-            align-items: center;
-            padding: 8px 15px;
-            text-decoration: none;
-            color: #555;
+            display: flex; align-items: center; padding: 8px 15px; text-decoration: none; color: #555;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            background-color: #fff;
+            border: 1px solid transparent; /* 預設透明邊框，避免hover時跳動 */
+            border-radius: 8px; background-color: #fff;
         }
-        .bookmark-item:hover .bookmark-link {
-             background-color: #eef5ff;
-             color: #007bff;
-             border-color: #cce5ff;
+        .bookmark-item:hover .bookmark-link, .bookmark-item.touch-hover .bookmark-link {
+             background-color: #eef5ff; color: #007bff; border-color: #cce5ff;
         }
-        .bookmark-link:last-child { border-bottom: 1px solid #eee; }
-        /* Favicon styling */
+        .bookmark-link:last-child { border-bottom: none; }
         .bookmark-icon {
-            width: 16px;
-            height: 16px;
-            margin-right: 10px;
-            vertical-align: middle;
-            border-radius: 3px;
-            flex-shrink: 0;
+            width: 16px; height: 16px; margin-right: 10px; vertical-align: middle;
+            border-radius: 3px; flex-shrink: 0;
         }
-        /* Controls (edit/delete buttons) styling */
         .item-controls {
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            opacity: 0;
-            transition: opacity 0.2s ease-in-out;
-            padding-left: 10px;
+            margin-left: auto; display: flex; align-items: center; gap: 8px; opacity: 0;
+            transition: opacity 0.2s ease-in-out; padding-left: 10px;
         }
-        .bookmark-item:hover .item-controls,
-        .bookmark-folder-summary:hover .item-controls { opacity: 1; }
+        .bookmark-item:hover .item-controls, .bookmark-item.touch-hover .item-controls,
+        .bookmark-folder-summary:hover .item-controls, .bookmark-folder-summary.touch-hover .item-controls { opacity: 1; }
         .control-btn {
             background: none; border: none; cursor: pointer; font-size: 16px; padding: 2px 5px;
             border-radius: 4px; line-height: 1; color: #555;
         }
         .control-btn:hover { background-color: rgba(0, 0, 0, 0.1); color: #000; }
-        /* Action buttons styling */
         .folder-actions {
-            padding: 5px 15px 10px 40px;
-            border-top: 1px solid #e0e0e0;
-            background-color: #fdfdfd;
+            padding: 5px 15px 10px 40px; border-top: 1px solid #e0e0e0; background-color: #fdfdfd;
         }
         .add-btn {
             background-color: #e8f0fe; color: #34495e; border: 1px solid #d0d8e0;
@@ -150,38 +94,22 @@
         }
         .add-btn:hover { background-color: #dbe8fd; }
         .main-add-button-container { text-align: center; margin-bottom: 25px; }
-
-        /* --- Drag & Drop styling --- */
-        .draggable-item.dragging {
-            opacity: 0.4;
-            background: #cce5ff;
-        }
-        .drop-target-folder { /* 用於高亮整個資料夾 */
-            box-shadow: 0 0 0 2px #007bff !important;
-            background-color: #eef5ff !important;
-        }
-        .drop-indicator-line { /* 插入線 */
-            height: 4px;
-            background-color: #0d6efd;
-            border-radius: 2px;
-            margin: -2px 0;
-        }
+        .draggable-item.dragging { opacity: 0.4; background: #cce5ff; }
+        .drop-target-folder { box-shadow: 0 0 0 2px #007bff !important; background-color: #eef5ff !important; }
+        .drop-indicator-line { height: 4px; background-color: #0d6efd; border-radius: 2px; margin: -2px 0; }
         #root-dropzone {
             height: 50px; margin-top: 15px; border-radius: 8px; display: flex;
             align-items: center; justify-content: center; font-size: 0.9em;
             color: #aaa; border: 2px dashed transparent; transition: all 0.2s ease-in-out;
         }
-        #root-dropzone.drop-target-root {
-            border-color: #007bff; background-color: #eef5ff; color: #007bff;
-        }
-
-        /* Responsive adjustments */
+        #root-dropzone.drop-target-root { border-color: #007bff; background-color: #eef5ff; color: #007bff; }
         @media (max-width: 600px) {
             body { padding: 10px; }
             .bookmark-container { padding: 15px; border-radius: 8px; }
             h1 { font-size: 1.8em; }
             .bookmark-list ul { padding-left: 20px; }
-            .item-controls { opacity: 1; }
+            .item-controls { opacity: 0; }
+            .bookmark-item.touch-hover .item-controls { opacity: 1; }
         }
     </style>
 </head>
@@ -198,14 +126,13 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const BOOKMARKS_STORAGE_KEY = 'myEditableBookmarks';
+    const BOOKMARKS_STORAGE_KEY = 'myEditableBookmarks_v5.5'; // 版本號更新
     const rootListElement = document.getElementById('bookmark-list-root');
     const addMainFolderBtn = document.getElementById('add-main-folder-btn');
     const addMainLinkBtn = document.getElementById('add-main-link-btn');
     const rootDropzone = document.getElementById('root-dropzone');
     let bookmarks = [];
 
-    // --- 完整的初始書籤資料 (從 indextest.html 提取) ---
     const initialBookmarks = [
         { "type": "folder", "name": "書籤列", "isOpen": true, "children": [
             { "type": "link", "name": "Microsoft Office", "url": "https://www.office.com/?auth=2" },
@@ -273,34 +200,55 @@ document.addEventListener('DOMContentLoaded', () => {
         ]}
     ];
 
-    // ------------------- 資料處理 & 核心功能 -------------------
-    // (這部分程式碼與前一版本幾乎相同，保持其穩定性)
+    // --- 資料處理 & 核心功能 ---
     function loadBookmarks() {
         try {
             const storedBookmarks = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
             bookmarks = storedBookmarks ? JSON.parse(storedBookmarks) : initialBookmarks;
-        } catch (e) { console.error("無法載入書籤:", e); bookmarks = initialBookmarks; }
+        } catch (e) {
+            console.error("無法載入或解析書籤，將使用預設書籤:", e);
+            bookmarks = initialBookmarks;
+        }
     }
-    function saveBookmarks() { localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(bookmarks, null, 2)); }
+    function saveBookmarks() {
+        try {
+            localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(bookmarks, null, 2));
+        } catch (e) {
+            console.error("無法儲存書籤:", e);
+            alert("無法儲存書籤，可能是儲存空間已滿。");
+        }
+    }
     function getFaviconUrl(url) {
-        try { return `https://www.google.com/s2/favicons?sz=32&domain_url=${new URL(url).hostname}`; } 
-        catch (e) { return "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; }
+        try {
+            return `https://www.google.com/s2/favicons?sz=32&domain_url=${new URL(url).hostname}`;
+        } catch (e) {
+            return "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+        }
     }
     function getNodeAndParentArray(path) {
         if (!path || path.length === 0) return { node: null, parentArray: bookmarks };
         let parentArray = bookmarks;
+        let parentNode = null;
         for (let i = 0; i < path.length - 1; i++) {
-            const parentNode = parentArray[path[i]];
-            if (parentNode?.type === 'folder' && parentNode.children) { parentArray = parentNode.children; } 
-            else { return { node: null, parentArray: null }; }
+            parentNode = parentArray[path[i]];
+            if (parentNode?.type === 'folder' && Array.isArray(parentNode.children)) {
+                parentArray = parentNode.children;
+            } else {
+                return { node: null, parentArray: null };
+            }
         }
         return { node: parentArray[path[path.length - 1]], parentArray };
     }
     function addItem(path, type) {
         const { node } = getNodeAndParentArray(path);
-        const targetArray = path.length === 0 ? bookmarks : node.children;
+        const targetArray = path.length === 0 ? bookmarks : (node?.children);
+        if (!Array.isArray(targetArray)) {
+            console.error("無法新增項目：目標位置無效");
+            return;
+        }
         const name = prompt(`請輸入新的${type === 'link' ? '書籤' : '資料夾'}名稱：`);
         if (!name) return;
+
         if (type === 'link') {
             const url = prompt("請輸入網址 (URL)：", "https://");
             if (!url) return;
@@ -314,11 +262,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const { node } = getNodeAndParentArray(path);
         if (!node) return;
         const newName = prompt("請輸入新的名稱：", node.name);
-        if (newName === null || newName === "") return;
-        node.name = newName;
+        if (newName === null) return;
+        node.name = newName || node.name;
+
         if (node.type === 'link') {
             const newUrl = prompt("請輸入新的網址：", node.url);
-            if (newUrl !== null) node.url = newUrl;
+            if (newUrl !== null) node.url = newUrl || node.url;
         }
         saveAndRerender();
     }
@@ -326,13 +275,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const { node, parentArray } = getNodeAndParentArray(path);
         if (!node || !parentArray) return;
         if (confirm(`確定要刪除 "${node.name}" 嗎？`)) {
-            parentArray.splice(path[path.length - 1], 1);
+            const index = path[path.length - 1];
+            parentArray.splice(index, 1);
             saveAndRerender();
         }
     }
     function saveAndRerender() { saveBookmarks(); render(); }
     
-    // ------------------- 渲染畫面 (包含拖曳屬性) -------------------
+    // --- 渲染畫面 ---
     function render() {
         rootListElement.innerHTML = '';
         renderNodes(bookmarks, rootListElement, []);
@@ -355,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createFolderElement(node, path) {
         const details = document.createElement('details');
         details.className = 'bookmark-folder-details';
-        details.open = node.isOpen;
+        details.open = !!node.isOpen;
         details.addEventListener('toggle', () => { node.isOpen = details.open; saveBookmarks(); });
         const summary = document.createElement('summary');
         summary.className = 'bookmark-folder-summary';
@@ -389,12 +339,12 @@ document.addEventListener('DOMContentLoaded', () => {
         editBtn.className = 'control-btn';
         editBtn.innerHTML = '✎';
         editBtn.title = '編輯';
-        editBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); editItem(path); });
+        editBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); editItem(path); };
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'control-btn';
         deleteBtn.innerHTML = '🗑️';
         deleteBtn.title = '刪除';
-        deleteBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); deleteItem(path); });
+        deleteBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); deleteItem(path); };
         controlsDiv.append(editBtn, deleteBtn);
         return controlsDiv;
     }
@@ -404,102 +354,124 @@ document.addEventListener('DOMContentLoaded', () => {
         const addLinkBtn = document.createElement('button');
         addLinkBtn.textContent = '＋ 新增書籤';
         addLinkBtn.className = 'add-btn';
-        addLinkBtn.addEventListener('click', e => { e.preventDefault(); addItem(path, 'link'); });
+        addLinkBtn.onclick = (e) => { e.preventDefault(); addItem(path, 'link'); };
         const addSubFolderBtn = document.createElement('button');
         addSubFolderBtn.textContent = '＋ 新增子資料夾';
         addSubFolderBtn.className = 'add-btn';
-        addSubFolderBtn.addEventListener('click', e => { e.preventDefault(); addItem(path, 'folder'); });
+        addSubFolderBtn.onclick = (e) => { e.preventDefault(); addItem(path, 'folder'); };
         folderActions.append(addLinkBtn, addSubFolderBtn);
         return folderActions;
     }
 
-    // ------------------- 拖曳邏輯 (含自動捲動與縫隙放置) -------------------
+    // --- 拖曳邏輯 ---
     let draggedElementPath = null;
     let scrollInterval = null;
-    let lastMouseY = 0;
-    const SCROLL_ZONE_SIZE = 60; // 邊緣捲動區的大小 (像素)
-    const SCROLL_SPEED = 15; // 捲動速度
-
+    let lastClientY = 0;
+    const SCROLL_ZONE_SIZE = 60;
+    const SCROLL_SPEED = 15;
+    let openFolderTimer = null;
+    let longPressTimer = null;
+    let touchStartEvent = null;
+    let isDragging = false;
+    
     function autoScroll() {
-        if (lastMouseY < SCROLL_ZONE_SIZE) {
-            window.scrollBy(0, -SCROLL_SPEED);
-        } else if (lastMouseY > window.innerHeight - SCROLL_ZONE_SIZE) {
-            window.scrollBy(0, SCROLL_SPEED);
-        }
+        if (!isDragging) return;
+        if (lastClientY < SCROLL_ZONE_SIZE) window.scrollBy(0, -SCROLL_SPEED);
+        else if (lastClientY > window.innerHeight - SCROLL_ZONE_SIZE) window.scrollBy(0, SCROLL_SPEED);
     }
-
-    document.addEventListener('dragstart', e => {
-        const target = e.target.closest('.draggable-item');
-        if (target) {
-            draggedElementPath = JSON.parse(target.dataset.path);
-            e.dataTransfer.effectAllowed = 'move';
-            setTimeout(() => target.classList.add('dragging'), 0);
-            if (!scrollInterval) {
-                scrollInterval = setInterval(autoScroll, 100);
-            }
+    
+    // --- 修改點 START (修正 window.event) ---
+    function startDrag(targetElement, event) {
+    // --- 修改點 END ---
+        if (!targetElement) return;
+        isDragging = true;
+        draggedElementPath = JSON.parse(targetElement.dataset.path);
+        
+        // --- 修改點 START (修正 window.event) ---
+        // 使用傳入的事件物件 `event`，而不是非標準的 `window.event`
+        if (event && event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', null); // For Firefox compatibility
         }
-    });
+        // --- 修改點 END ---
 
+        setTimeout(() => targetElement.classList.add('dragging'), 0);
+        if (!scrollInterval) scrollInterval = setInterval(autoScroll, 100);
+        clearTouchHover();
+    }
+    
     let currentIndicator = null;
     function clearIndicators() {
-        if (currentIndicator) {
-            currentIndicator.remove();
-            currentIndicator = null;
-        }
-        document.querySelectorAll('.drop-target-folder, .drop-target-root').forEach(el => {
-            el.classList.remove('drop-target-folder', 'drop-target-root');
-        });
+        currentIndicator?.remove();
+        currentIndicator = null;
+        document.querySelectorAll('.drop-target-folder, .drop-target-root').forEach(el => 
+            el.classList.remove('drop-target-folder', 'drop-target-root')
+        );
+        clearTimeout(openFolderTimer);
     }
 
-    document.addEventListener('dragover', e => {
-        e.preventDefault();
-        lastMouseY = e.clientY;
+    function handleMove(e) {
+        if (e.type === 'touchmove' && isDragging) {
+            e.preventDefault(); 
+        }
+        if (e.type === 'dragover') { e.preventDefault(); }
+        if (!isDragging) return;
+
+        const clientY = e.type.startsWith('touch') ? e.touches[0].clientY : e.clientY;
+        const clientX = e.type.startsWith('touch') ? e.touches[0].clientX : e.clientX;
+        lastClientY = clientY;
         
         clearIndicators();
 
-        const dropTargetItem = e.target.closest('.draggable-item');
-        const dropTargetRoot = e.target.closest('#root-dropzone');
-        
-        if (dropTargetRoot) {
-            dropTargetRoot.classList.add('drop-target-root');
-        } else if (dropTargetItem) {
-            const rect = dropTargetItem.getBoundingClientRect();
-            const isFolderSummary = e.target.closest('.bookmark-folder-summary');
+        const dropTargetElement = document.elementFromPoint(clientX, clientY);
+        if (!dropTargetElement) return;
 
-            // 放入資料夾的邏輯
-            if (isFolderSummary) {
-                isFolderSummary.closest('.bookmark-folder-details').classList.add('drop-target-folder');
-                return; // 優先處理放入資料夾
-            }
+        const folderSummary = dropTargetElement.closest('.bookmark-folder-summary');
+        if (folderSummary) {
+            const folderItem = folderSummary.closest('.draggable-item');
+            const folderPathStr = folderItem?.dataset.path;
+            const draggedPathStr = JSON.stringify(draggedElementPath);
             
-            // 縫隙放置的邏輯
-            const midpoint = rect.top + rect.height / 2;
+            // --- 修改點 START (修正拖曳邏輯) ---
+            // 修正判斷式：不能將資料夾拖曳到其自身或其子資料夾內
+            // 正確邏輯：檢查「目標資料夾路徑」是否以「被拖曳項目路徑」為開頭
+            const isDroppingOnItselfOrChild = folderPathStr === draggedPathStr || (folderItem.querySelector('ul') && folderPathStr.startsWith(draggedPathStr.slice(0, -1) + ','));
+            if (folderPathStr && !isDroppingOnItselfOrChild) {
+            // --- 修改點 END ---
+                const folderDetails = folderSummary.closest('.bookmark-folder-details');
+                folderDetails.classList.add('drop-target-folder');
+                if (!folderDetails.open) {
+                    openFolderTimer = setTimeout(() => { if (folderDetails) folderDetails.open = true; }, 600);
+                }
+                return;
+            }
+        }
+
+        const dropTargetItem = dropTargetElement.closest('.draggable-item');
+        if (dropTargetItem && dropTargetItem.dataset.path !== JSON.stringify(draggedElementPath)) {
+            const rect = dropTargetItem.getBoundingClientRect();
             const indicator = document.createElement('div');
             indicator.className = 'drop-indicator-line';
             currentIndicator = indicator;
-
-            if (e.clientY < midpoint) {
+            const dropPosition = (clientY - rect.top) / rect.height;
+            if (dropPosition < 0.5) {
                 dropTargetItem.before(indicator);
             } else {
                 dropTargetItem.after(indicator);
             }
+            return;
         }
-    });
-    
-    function stopDrag() {
-        clearInterval(scrollInterval);
-        scrollInterval = null;
-        clearIndicators();
-        document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
-        draggedElementPath = null;
+
+        const dropTargetRoot = dropTargetElement.closest('#root-dropzone');
+        if (dropTargetRoot) {
+            dropTargetRoot.classList.add('drop-target-root');
+        }
     }
-
-    document.addEventListener('dragend', stopDrag);
-    document.addEventListener('drop', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (!draggedElementPath) return stopDrag();
-
+    
+    function endDrag(e) {
+        if (!isDragging) return;
+        if (e.type === 'touchend') e.preventDefault();
+        
         const dropTargetRoot = document.querySelector('.drop-target-root');
         const dropTargetFolder = document.querySelector('.drop-target-folder');
         const dropIndicator = document.querySelector('.drop-indicator-line');
@@ -508,65 +480,190 @@ document.addEventListener('DOMContentLoaded', () => {
         if (dropTargetRoot) {
             destinationPath = [bookmarks.length];
         } else if (dropTargetFolder) {
-            const pathStr = dropTargetFolder.closest('.draggable-item').dataset.path;
-            const path = JSON.parse(pathStr);
-            const { node } = getNodeAndParentArray(path);
-            if (node?.type === 'folder') {
-                destinationPath = [...path, node.children.length];
+            const pathStr = dropTargetFolder.closest('.draggable-item')?.dataset.path;
+            if (pathStr) {
+                const path = JSON.parse(pathStr);
+                const { node } = getNodeAndParentArray(path);
+                if (node?.type === 'folder' && Array.isArray(node.children)) {
+                    destinationPath = [...path, node.children.length];
+                }
             }
         } else if (dropIndicator) {
-            const prevSibling = dropIndicator.previousElementSibling;
-            const nextSibling = dropIndicator.nextElementSibling;
-            if (nextSibling && nextSibling.matches('.draggable-item')) {
-                destinationPath = JSON.parse(nextSibling.dataset.path);
-            } else if (prevSibling && prevSibling.matches('.draggable-item')) {
-                const path = JSON.parse(prevSibling.dataset.path);
+            const prev = dropIndicator.previousElementSibling;
+            const next = dropIndicator.nextElementSibling;
+            if (next?.matches('.draggable-item')) {
+                destinationPath = JSON.parse(next.dataset.path);
+            } else if (prev?.matches('.draggable-item')) {
+                const path = JSON.parse(prev.dataset.path);
                 path[path.length - 1]++;
                 destinationPath = path;
-            } else { // 列表中的第一個
+            } else {
                 const parentUl = dropIndicator.parentElement;
-                if(parentUl.id === 'bookmark-list-root') {
-                    destinationPath = [0];
-                } else {
-                    const parentPath = JSON.parse(parentUl.closest('.draggable-item').dataset.path);
+                const parentItem = parentUl.closest('.draggable-item');
+                if (parentItem) {
+                    const parentPath = JSON.parse(parentItem.dataset.path);
                     destinationPath = [...parentPath, 0];
+                } else {
+                    destinationPath = [0];
                 }
             }
         }
 
-        if (destinationPath) {
+        if (draggedElementPath && destinationPath) {
             moveNode(draggedElementPath, destinationPath);
             saveAndRerender();
         }
-        stopDrag();
-    });
-    
+        stopDragAndClear();
+    }
+
+    function stopDragAndClear() {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+        clearIndicators();
+        document.querySelector('.dragging')?.classList.remove('dragging');
+        draggedElementPath = null;
+        isDragging = false;
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+        touchStartEvent = null;
+    }
+
     function moveNode(sourcePath, destinationPath) {
-        if (JSON.stringify(sourcePath) === JSON.stringify(destinationPath)) return;
-        if (JSON.stringify(destinationPath).startsWith(JSON.stringify(sourcePath) + ',')) return;
+        const sourcePathStr = JSON.stringify(sourcePath);
+        const destPathStr = JSON.stringify(destinationPath);
+        if (sourcePathStr === destPathStr || destPathStr.startsWith(sourcePathStr.slice(0, -1) + ',')) return;
 
         const { node: nodeToMove, parentArray: sourceParentArray } = getNodeAndParentArray(sourcePath);
-        if (!nodeToMove) return;
+        if (!nodeToMove || !sourceParentArray) return;
         const sourceIndex = sourcePath[sourcePath.length - 1];
         sourceParentArray.splice(sourceIndex, 1);
 
         let adjustedDestPath = [...destinationPath];
-        const sourceParentPath = sourcePath.slice(0, -1);
-        const destParentPath = destinationPath.slice(0, -1);
-        if (JSON.stringify(sourceParentPath) === JSON.stringify(destParentPath) && sourceIndex < destinationPath[destinationPath.length - 1]) {
+        const sourceParentPathStr = JSON.stringify(sourcePath.slice(0, -1));
+        const destParentPathStr = JSON.stringify(destinationPath.slice(0, -1));
+
+        if (sourceParentPathStr === destParentPathStr && sourceIndex < destinationPath[destinationPath.length - 1]) {
             adjustedDestPath[adjustedDestPath.length - 1]--;
         }
-
-        const { parentArray: destParentArray } = getNodeAndParentArray(adjustedDestPath);
-        if (!destParentArray) { // 如果目標是根目錄
-             bookmarks.splice(adjustedDestPath[0], 0, nodeToMove);
+        
+        const destParentPath = adjustedDestPath.slice(0, -1);
+        let destArray;
+        if (destParentPath.length === 0) {
+            destArray = bookmarks;
         } else {
+            const { node: destParentNode } = getNodeAndParentArray(destParentPath);
+            if (destParentNode && destParentNode.type === 'folder') {
+                destArray = destParentNode.children;
+            }
+        }
+        
+        if (destArray) {
             const destIndex = adjustedDestPath[adjustedDestPath.length - 1];
-            destParentArray.splice(destIndex, 0, nodeToMove);
+            destArray.splice(destIndex, 0, nodeToMove);
+        } else {
+            console.error("無法找到有效的目標位置，移動操作已取消。");
+            sourceParentArray.splice(sourceIndex, 0, nodeToMove);
         }
     }
     
-    // ------------------- 初始化 -------------------
+    function handleTouchStart(e) {
+        if (e.target.closest('.control-btn, .add-btn, a')) return;
+        
+        const target = e.target.closest('.draggable-item');
+        if (!target) return;
+
+        // --- 修改點 START (程式碼清理) ---
+        // 簡化邏輯，移除已註解掉的複雜判斷，點擊 summary 任何位置皆可準備拖曳
+        if (e.target.closest('summary')) {
+            // 此處可保留，防止 summary 開合與長按拖曳衝突，但目前長按邏輯已處理得很好
+        }
+        // --- 修改點 END ---
+
+        touchStartEvent = e;
+        longPressTimer = setTimeout(() => {
+            if(touchStartEvent) {
+                if (navigator.vibrate) navigator.vibrate(50);
+                // 觸控事件沒有 event.dataTransfer，所以 startDrag 的第二個參數傳 null
+                startDrag(target, null); 
+            }
+        }, 350);
+    }
+
+    function handleTouchMove(e) {
+        if (isDragging) {
+            handleMove(e);
+            return;
+        }
+        
+        if (touchStartEvent) {
+            const touch = e.touches[0];
+            const startTouch = touchStartEvent.touches[0];
+            if (Math.abs(touch.clientX - startTouch.clientX) > 10 || Math.abs(touch.clientY - startTouch.clientY) > 10) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+                touchStartEvent = null;
+            }
+        }
+    }
+
+    function handleTouchEnd(e) {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            if (!isDragging) {
+                 handleTap(e);
+            }
+        }
+        endDrag(e);
+    }
+    
+    function clearTouchHover(exceptElement = null) {
+        document.querySelectorAll('.touch-hover').forEach(el => {
+            if (el !== exceptElement) {
+                el.classList.remove('touch-hover');
+            }
+        });
+    }
+
+    function handleTap(e) {
+        const targetItem = e.target.closest('.bookmark-item');
+        if (!targetItem) {
+            clearTouchHover();
+            return;
+        }
+        if (targetItem.classList.contains('touch-hover')) {
+            if (!e.target.closest('.item-controls')) {
+                setTimeout(() => clearTouchHover(), 100); 
+            }
+        } else {
+            clearTouchHover();
+            targetItem.classList.add('touch-hover');
+        }
+    }
+    
+    // --- 綁定事件 ---
+    document.addEventListener('dragstart', (e) => {
+        const target = e.target.closest('.draggable-item');
+        // --- 修改點 START (修正 window.event) ---
+        // 將事件物件 `e` 傳遞給 startDrag
+        if (target) startDrag(target, e);
+        // --- 修改點 END ---
+    });
+    document.addEventListener('dragover', handleMove);
+    document.addEventListener('drop', endDrag);
+    document.addEventListener('dragend', stopDragAndClear);
+    
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('touchcancel', stopDragAndClear);
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.bookmark-item')) {
+            clearTouchHover();
+        }
+    });
+
+    // --- 初始化 ---
     addMainFolderBtn.addEventListener('click', () => addItem([], 'folder'));
     addMainLinkBtn.addEventListener('click', () => addItem([], 'link'));
     loadBookmarks();
