@@ -100,6 +100,19 @@
         .draggable-item.dragging { opacity: 0.4; background: #cce5ff; }
         .drop-target-folder { box-shadow: 0 0 0 2px #007bff !important; background-color: #eef5ff !important; }
         .drop-indicator-line { height: 4px; background-color: #0d6efd; border-radius: 2px; margin: -2px 0; }
+
+        /* --- IMPROVEMENT START: New style for the large drop zone in gaps --- */
+        .drop-indicator-block {
+            height: 36px;
+            background-color: rgba(13, 110, 253, 0.2);
+            border: 2px dashed #0d6efd;
+            border-radius: 8px;
+            margin-top: -36px; /* Overlap the margin of the item above */
+            box-sizing: border-box;
+            pointer-events: none; /* Make sure it doesn't interfere with elementFromPoint */
+        }
+        /* --- IMPROVEMENT END --- */
+
         #root-dropzone {
             height: 50px; margin-top: 15px; border-radius: 8px; display: flex;
             align-items: center; justify-content: center; font-size: 0.9em;
@@ -408,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(openFolderTimer);
     }
 
+    // --- IMPROVEMENT START: Rewritten handleMove function ---
     function handleMove(e) {
         if (e.type === 'touchmove' && isDragging) {
             e.preventDefault(); 
@@ -424,6 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dropTargetElement = document.elementFromPoint(clientX, clientY);
         if (!dropTargetElement) return;
 
+        // --- Priority 1: Check for dropping ON a folder ---
         const folderSummary = dropTargetElement.closest('.bookmark-folder-summary');
         if (folderSummary) {
             const folderItem = folderSummary.closest('.draggable-item');
@@ -437,10 +452,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!folderDetails.open) {
                     openFolderTimer = setTimeout(() => { if (folderDetails) folderDetails.open = true; }, 600);
                 }
-                return;
+                return; // Found a target, exit
             }
         }
 
+        // --- Priority 2: Check for dropping BETWEEN items using the thin line indicator ---
         const dropTargetItem = dropTargetElement.closest('.draggable-item');
         if (dropTargetItem && dropTargetItem.dataset.path !== JSON.stringify(draggedElementPath)) {
             const rect = dropTargetItem.getBoundingClientRect();
@@ -448,30 +464,90 @@ document.addEventListener('DOMContentLoaded', () => {
             indicator.className = 'drop-indicator-line';
             currentIndicator = indicator;
             const dropPosition = (clientY - rect.top) / rect.height;
-            if (dropPosition < 0.5) {
-                dropTargetItem.before(indicator);
-            } else {
-                dropTargetItem.after(indicator);
+            // Only show thin line indicator for items inside folders, not top-level
+            if (dropTargetItem.parentElement !== rootListElement || dropPosition > 0.15 && dropPosition < 0.85) {
+                 if (dropPosition < 0.5) {
+                    dropTargetItem.before(indicator);
+                } else {
+                    dropTargetItem.after(indicator);
+                }
+                return; // Found a target, exit
             }
-            return;
         }
 
+        // --- Priority 3 (FALLBACK): Check for dropping in the GAPS between TOP-LEVEL items ---
+        const isOverRootContainer = dropTargetElement.closest('.bookmark-container');
+        if (isOverRootContainer) {
+            const rootItems = Array.from(rootListElement.children);
+            let nextItem = null;
+
+            for(const item of rootItems) {
+                // If the item is the one being dragged, skip it
+                if(item.classList.contains('dragging')) continue;
+
+                const rect = item.getBoundingClientRect();
+                // If cursor is above the vertical midpoint of an item, it's the target
+                if (clientY < rect.top + rect.height / 2) {
+                    nextItem = item;
+                    break;
+                }
+            }
+
+            const indicator = document.createElement('div');
+            indicator.className = 'drop-indicator-block'; // Use the new block style
+            currentIndicator = indicator;
+
+            if (nextItem) {
+                 // Don't place indicator before the item immediately following the dragged one
+                if (nextItem.previousElementSibling?.classList.contains('dragging')) {
+                    // This prevents the indicator from appearing in the original spot
+                } else {
+                    nextItem.before(indicator);
+                }
+            } else {
+                // If no nextItem, it means we are below the last item.
+                // We let the rootDropzone handle this, but if we're not over it yet,
+                // we can place the indicator after the last non-dragging item.
+                const lastItem = rootItems[rootItems.length-1];
+                if (lastItem && !lastItem.classList.contains('dragging')) {
+                    lastItem.after(indicator);
+                }
+            }
+            if(currentIndicator.parentElement) return;
+        }
+
+        // --- Priority 4: Check for the main root dropzone at the bottom ---
         const dropTargetRoot = dropTargetElement.closest('#root-dropzone');
         if (dropTargetRoot) {
             dropTargetRoot.classList.add('drop-target-root');
         }
     }
-    
+    // --- IMPROVEMENT END ---
+
+    // --- IMPROVEMENT START: Updated endDrag function ---
     function endDrag(e) {
         if (!isDragging) return;
         if (e.type === 'touchend') e.preventDefault();
         
         const dropTargetRoot = document.querySelector('.drop-target-root');
         const dropTargetFolder = document.querySelector('.drop-target-folder');
-        const dropIndicator = document.querySelector('.drop-indicator-line');
+        const dropIndicatorLine = document.querySelector('.drop-indicator-line');
+        const dropIndicatorBlock = document.querySelector('.drop-indicator-block'); // Check for new indicator
         let destinationPath;
 
-        if (dropTargetRoot) {
+        if (dropIndicatorBlock) {
+            const nextElement = dropIndicatorBlock.nextElementSibling;
+            if (nextElement && nextElement.matches('.draggable-item')) {
+                // Dropping before the next element
+                destinationPath = JSON.parse(nextElement.dataset.path);
+            } else {
+                // Dropping after the last element in the list
+                const parentUl = dropIndicatorBlock.parentElement;
+                if (parentUl === rootListElement) {
+                    destinationPath = [bookmarks.length];
+                }
+            }
+        } else if (dropTargetRoot) {
             destinationPath = [bookmarks.length];
         } else if (dropTargetFolder) {
             const pathStr = dropTargetFolder.closest('.draggable-item')?.dataset.path;
@@ -482,9 +558,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     destinationPath = [...path, node.children.length];
                 }
             }
-        } else if (dropIndicator) {
-            const prev = dropIndicator.previousElementSibling;
-            const next = dropIndicator.nextElementSibling;
+        } else if (dropIndicatorLine) {
+            const prev = dropIndicatorLine.previousElementSibling;
+            const next = dropIndicatorLine.nextElementSibling;
             if (next?.matches('.draggable-item')) {
                 destinationPath = JSON.parse(next.dataset.path);
             } else if (prev?.matches('.draggable-item')) {
@@ -492,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 path[path.length - 1]++;
                 destinationPath = path;
             } else {
-                const parentUl = dropIndicator.parentElement;
+                const parentUl = dropIndicatorLine.parentElement;
                 const parentItem = parentUl.closest('.draggable-item');
                 if (parentItem) {
                     const parentPath = JSON.parse(parentItem.dataset.path);
@@ -509,6 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         stopDragAndClear();
     }
+    // --- IMPROVEMENT END ---
 
     function stopDragAndClear() {
         clearInterval(scrollInterval);
