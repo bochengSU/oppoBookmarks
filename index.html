@@ -420,8 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         clearTimeout(openFolderTimer);
     }
-
-    // --- IMPROVEMENT START: Rewritten handleMove function ---
+    
     function handleMove(e) {
         if (e.type === 'touchmove' && isDragging) {
             e.preventDefault(); 
@@ -438,7 +437,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const dropTargetElement = document.elementFromPoint(clientX, clientY);
         if (!dropTargetElement) return;
 
-        // --- Priority 1: Check for dropping ON a folder ---
         const folderSummary = dropTargetElement.closest('.bookmark-folder-summary');
         if (folderSummary) {
             const folderItem = folderSummary.closest('.draggable-item');
@@ -452,11 +450,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!folderDetails.open) {
                     openFolderTimer = setTimeout(() => { if (folderDetails) folderDetails.open = true; }, 600);
                 }
-                return; // Found a target, exit
+                return; 
             }
         }
 
-        // --- Priority 2: Check for dropping BETWEEN items using the thin line indicator ---
         const dropTargetItem = dropTargetElement.closest('.draggable-item');
         if (dropTargetItem && dropTargetItem.dataset.path !== JSON.stringify(draggedElementPath)) {
             const rect = dropTargetItem.getBoundingClientRect();
@@ -464,29 +461,24 @@ document.addEventListener('DOMContentLoaded', () => {
             indicator.className = 'drop-indicator-line';
             currentIndicator = indicator;
             const dropPosition = (clientY - rect.top) / rect.height;
-            // Only show thin line indicator for items inside folders, not top-level
             if (dropTargetItem.parentElement !== rootListElement || dropPosition > 0.15 && dropPosition < 0.85) {
                  if (dropPosition < 0.5) {
                     dropTargetItem.before(indicator);
                 } else {
                     dropTargetItem.after(indicator);
                 }
-                return; // Found a target, exit
+                return; 
             }
         }
 
-        // --- Priority 3 (FALLBACK): Check for dropping in the GAPS between TOP-LEVEL items ---
         const isOverRootContainer = dropTargetElement.closest('.bookmark-container');
         if (isOverRootContainer) {
             const rootItems = Array.from(rootListElement.children);
             let nextItem = null;
 
             for(const item of rootItems) {
-                // If the item is the one being dragged, skip it
                 if(item.classList.contains('dragging')) continue;
-
                 const rect = item.getBoundingClientRect();
-                // If cursor is above the vertical midpoint of an item, it's the target
                 if (clientY < rect.top + rect.height / 2) {
                     nextItem = item;
                     break;
@@ -494,20 +486,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const indicator = document.createElement('div');
-            indicator.className = 'drop-indicator-block'; // Use the new block style
+            indicator.className = 'drop-indicator-block';
             currentIndicator = indicator;
 
             if (nextItem) {
-                 // Don't place indicator before the item immediately following the dragged one
                 if (nextItem.previousElementSibling?.classList.contains('dragging')) {
-                    // This prevents the indicator from appearing in the original spot
                 } else {
                     nextItem.before(indicator);
                 }
             } else {
-                // If no nextItem, it means we are below the last item.
-                // We let the rootDropzone handle this, but if we're not over it yet,
-                // we can place the indicator after the last non-dragging item.
                 const lastItem = rootItems[rootItems.length-1];
                 if (lastItem && !lastItem.classList.contains('dragging')) {
                     lastItem.after(indicator);
@@ -516,15 +503,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if(currentIndicator.parentElement) return;
         }
 
-        // --- Priority 4: Check for the main root dropzone at the bottom ---
         const dropTargetRoot = dropTargetElement.closest('#root-dropzone');
         if (dropTargetRoot) {
             dropTargetRoot.classList.add('drop-target-root');
         }
     }
-    // --- IMPROVEMENT END ---
 
-    // --- IMPROVEMENT START: Updated endDrag function ---
     function endDrag(e) {
         if (!isDragging) return;
         if (e.type === 'touchend') e.preventDefault();
@@ -532,20 +516,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const dropTargetRoot = document.querySelector('.drop-target-root');
         const dropTargetFolder = document.querySelector('.drop-target-folder');
         const dropIndicatorLine = document.querySelector('.drop-indicator-line');
-        const dropIndicatorBlock = document.querySelector('.drop-indicator-block'); // Check for new indicator
+        const dropIndicatorBlock = document.querySelector('.drop-indicator-block');
         let destinationPath;
 
         if (dropIndicatorBlock) {
             const nextElement = dropIndicatorBlock.nextElementSibling;
             if (nextElement && nextElement.matches('.draggable-item')) {
-                // Dropping before the next element
                 destinationPath = JSON.parse(nextElement.dataset.path);
             } else {
-                // Dropping after the last element in the list
-                const parentUl = dropIndicatorBlock.parentElement;
-                if (parentUl === rootListElement) {
-                    destinationPath = [bookmarks.length];
-                }
+                destinationPath = [bookmarks.length];
             }
         } else if (dropTargetRoot) {
             destinationPath = [bookmarks.length];
@@ -585,7 +564,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         stopDragAndClear();
     }
-    // --- IMPROVEMENT END ---
 
     function stopDragAndClear() {
         clearInterval(scrollInterval);
@@ -599,25 +577,22 @@ document.addEventListener('DOMContentLoaded', () => {
         touchStartEvent = null;
     }
 
+    // ----- START OF FIX: Corrected moveNode function -----
     function moveNode(sourcePath, destinationPath) {
         const sourcePathStr = JSON.stringify(sourcePath);
         const destPathStr = JSON.stringify(destinationPath);
         if (sourcePathStr === destPathStr || destPathStr.startsWith(sourcePathStr.slice(0, -1) + ',')) return;
 
+        // 1. Get the node to move and its source array
         const { node: nodeToMove, parentArray: sourceParentArray } = getNodeAndParentArray(sourcePath);
-        if (!nodeToMove || !sourceParentArray) return;
-        const sourceIndex = sourcePath[sourcePath.length - 1];
-        sourceParentArray.splice(sourceIndex, 1);
-
-        let adjustedDestPath = [...destinationPath];
-        const sourceParentPathStr = JSON.stringify(sourcePath.slice(0, -1));
-        const destParentPathStr = JSON.stringify(destinationPath.slice(0, -1));
-
-        if (sourceParentPathStr === destParentPathStr && sourceIndex < destinationPath[destinationPath.length - 1]) {
-            adjustedDestPath[adjustedDestPath.length - 1]--;
+        if (!nodeToMove || !sourceParentArray) {
+            console.error("Cannot find source node.");
+            return;
         }
-        
-        const destParentPath = adjustedDestPath.slice(0, -1);
+        const sourceIndex = sourcePath[sourcePath.length - 1];
+
+        // 2. Get the destination array BEFORE any modifications
+        const destParentPath = destinationPath.slice(0, -1);
         let destArray;
         if (destParentPath.length === 0) {
             destArray = bookmarks;
@@ -627,15 +602,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 destArray = destParentNode.children;
             }
         }
-        
-        if (destArray) {
-            const destIndex = adjustedDestPath[adjustedDestPath.length - 1];
-            destArray.splice(destIndex, 0, nodeToMove);
-        } else {
-            console.error("無法找到有效的目標位置，移動操作已取消。");
-            sourceParentArray.splice(sourceIndex, 0, nodeToMove);
+
+        if (!destArray) {
+            console.error("Cannot find valid destination. Move cancelled.");
+            return; // Exit if destination is invalid
         }
+        
+        let destIndex = destinationPath[destinationPath.length - 1];
+
+        // 3. Perform the move: first splice from source
+        sourceParentArray.splice(sourceIndex, 1);
+
+        // 4. Adjust destination index if moving within the same array
+        //    (if we moved an item from a lower index to a higher one in the same list)
+        if (sourceParentArray === destArray && sourceIndex < destIndex) {
+            destIndex--;
+        }
+
+        // 5. Splice into destination
+        destArray.splice(destIndex, 0, nodeToMove);
     }
+    // ----- END OF FIX -----
     
     function handleTouchStart(e) {
         if (e.target.closest('.control-btn, .add-btn, a')) return;
