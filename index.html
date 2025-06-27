@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的書籤 (v5.6 觸控體驗優化版)</title>
+    <title>我的書籤 (v5.6 間距優化版)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
@@ -11,10 +11,6 @@
         /* 讓觸控操作更流暢，但允許頁面滾動 */
         html, body {
             -webkit-touch-callout: none; /* iOS Safari: 禁用長按選單 */
-            -webkit-user-select: none;   /* Safari/Chrome: 禁用選取文字 */
-            -moz-user-select: none;      /* Firefox */
-            -ms-user-select: none;       /* IE/Edge */
-            user-select: none;           /* 標準語法 */
         }
         /* Basic Reset & Font */
         body {
@@ -36,15 +32,18 @@
         .bookmark-list { list-style-type: none; padding-left: 0; margin: 0; }
         .bookmark-list ul { list-style-type: none; padding-left: 25px; margin: 5px 0; }
         .bookmark-item {
+            margin-bottom: 2px;
             position: relative;
-            touch-action: manipulation;
-            /* --- 修改點 START (增加間距) --- */
-            margin-bottom: 8px; /* 統一增加所有項目的間距 */
-            /* --- 修改點 END --- */
+            touch-action: manipulation; /* 提示瀏覽器此區域主要用於操作，減少觸控延遲 */
         }
+        
+        /* --- 修改點 START (增加間距) --- */
+        /* 增加第一層項目的間距，方便拖曳調整順序 */
         #bookmark-list-root > .bookmark-item {
-            margin-bottom: 12px; /* 根目錄下的項目間距可以更大一些 */
+            margin-bottom: 36px;
         }
+        /* --- 修改點 END --- */
+        
         .bookmark-folder-details {
             margin-top: 10px; margin-bottom: 10px; border: 1px solid #e0e0e0;
             border-radius: 8px; background-color: #fcfcfc; overflow: hidden;
@@ -52,7 +51,7 @@
         .bookmark-folder-details[open] > summary { background-color: #e8f0fe; border-bottom: 1px solid #d0d0d0; }
         .bookmark-folder-summary {
             font-weight: 700; cursor: pointer; padding: 12px 15px; background-color: #f0f8ff;
-            color: #34495e; display: flex; align-items: center;
+            color: #34495e; display: flex; align-items: center; user-select: none;
             transition: background-color 0.2s ease-in-out;
         }
         .bookmark-folder-summary:hover { background-color: #e8f0fe; }
@@ -66,7 +65,7 @@
         .bookmark-link {
             display: flex; align-items: center; padding: 8px 15px; text-decoration: none; color: #555;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-            border: 1px solid transparent;
+            border: 1px solid transparent; /* 預設透明邊框，避免hover時跳動 */
             border-radius: 8px; background-color: #fff;
         }
         .bookmark-item:hover .bookmark-link, .bookmark-item.touch-hover .bookmark-link {
@@ -107,25 +106,6 @@
             color: #aaa; border: 2px dashed transparent; transition: all 0.2s ease-in-out;
         }
         #root-dropzone.drop-target-root { border-color: #007bff; background-color: #eef5ff; color: #007bff; }
-        
-        /* --- 修改點 START (頂部放置區樣式) --- */
-        .top-dropzone {
-            height: 15px;
-            margin-bottom: 5px;
-            border-radius: 8px;
-            transition: all 0.2s ease-in-out;
-            display: none; /* 平時隱藏 */
-        }
-        body.is-dragging .top-dropzone {
-            display: block; /* 拖曳時顯示 */
-        }
-        .top-dropzone.drop-target-top {
-            background-color: #eef5ff;
-            border: 2px dashed #007bff;
-            height: 40px; /* 變為目標時增高，更容易放置 */
-        }
-        /* --- 修改點 END --- */
-
         @media (max-width: 600px) {
             body { padding: 10px; }
             .bookmark-container { padding: 15px; border-radius: 8px; }
@@ -149,7 +129,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    const BOOKMARKS_STORAGE_KEY = 'myEditableBookmarks_v5.6';
+    const BOOKMARKS_STORAGE_KEY = 'myEditableBookmarks_v5.6'; // 版本號更新
     const rootListElement = document.getElementById('bookmark-list-root');
     const addMainFolderBtn = document.getElementById('add-main-folder-btn');
     const addMainLinkBtn = document.getElementById('add-main-link-btn');
@@ -165,12 +145,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 { "type": "link", "name": "WCSM", "url": "https://service-sg.myoppo.com/login" },
                 { "type": "link", "name": "統一認證中心", "url": "https://sso.myoas.com/siam/login?service=https%3A%2F%2Fsso.myoas.com%2Fsiam%2Foauth2.0%2FcallbackAuthorize%3Foauth20_callbackUrl%3Dhttps%3A%2F%2Fgcsm-sg.oppoit.com%2Fportal%2Fapi%2Fv1%2Fsso%2Fcallback&oauth20_state=https%3A%2F%2Fgcsm-sg.oppoit.com%2Forder%2Forder-management%2Fafter-sales-order" },
                 { "type": "link", "name": "黑貓貨態", "url": "https://www.t-cat.com.tw/inquire/trace.aspx" },
+                { "type": "link", "name": "智齒", "url": "https://chat-sg.oppo.com/console/home/myReception" },
+                { "type": "link", "name": "oppo文字客服", "url": "https://cs.oppo-aed.tw/login#/login" },
+                { "type": "link", "name": "OPPO體驗店", "url": "https://docs.google.com/spreadsheets/d/1CtwmIZublKb_yUYqgdLByM8ffwrYhBV9z1b931KY_2w/edit?copiedFromTrash#gid=1454694516" },
+                { "type": "link", "name": "OPPO表單(模板罐頭)", "url": "https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1307372469" },
+                { "type": "link", "name": "OPPO機型料件永缺表", "url": "https://docs.google.com/spreadsheets/d/1DzbmFhv5GFf8-p5DkKlHimzvRou1LyLS/edit?gid=1640156935#gid=1640156935" },
+                { "type": "link", "name": "OPPO操作罐頭", "url": "https://docs.google.com/spreadsheets/d/16aizSwEhaRzNbnq02eb2esDvsTtWHTgw/edit#gid=1738325245" },
+                { "type": "link", "name": "OPPO手機分析表", "url": "https://docs.google.com/spreadsheets/d/1ihphqb5kwbZ5VGPhvh5mdLl_OOp6OR1Z/edit#gid=948748319" },
+                { "type": "link", "name": "Airtable(佈達資訊)", "url": "https://airtable.com/appo0Lgi88CH67Fko/tbldP4APTKOM2lWmx/viwb3JTf6h9erucdE?blocks=hide" },
+                { "type": "link", "name": "OPPO佈達onedrive(oppo@54386488)", "url": "https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" },
+                { "type": "link", "name": "OPPO佈達(原Onedrive內容)", "url": "https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" },
+                { "type": "link", "name": "OPPO後拋案件 - 首頁", "url": "https://84459043.sharepoint.com/sites/OPPO-" },
+                { "type": "link", "name": "OPPO Life", "url": "https://app.oppo-aed.tw/admin" },
+                { "type": "link", "name": "CYBERBIZ後台管理", "url": "https://oppo.cyberbiz.co/user/sign_in" },
+                { "type": "link", "name": "OPPO官網", "url": "https://www.oppo.com/tw/" },
+                { "type": "link", "name": "OPPO網路商店", "url": "https://estore.oppo-aed.tw/?utm_campaign=estore&utm_medium=button&utm_source=officialweb" },
+                { "type": "link", "name": "OPPO官網(全球)", "url": "https://www.oppo.com/en/choose-site/" },
+                { "type": "link", "name": "HeyTap官網", "url": "https://brand.heytap.com/cn/business.html" },
+                { "type": "link", "name": "OPPO官方粉專", "url": "https://zh-tw.facebook.com/OPPOTaiwan/" },
+                { "type": "link", "name": "神揚保代(帳/密54386488)", "url": "https://insurance.senyoung.com.tw/default.aspx" },
+                { "type": "link", "name": "產品保固", "url": "http://warranty-query.newboomgroup.tw:8012/manager/login" },
+                { "type": "link", "name": "財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)", "url": "https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query" },
+                { "type": "link", "name": "三大電信 - Google 試算表", "url": "https://docs.google.com/spreadsheets/d/16rPtb3sIXBZ92mK5Xdnskc39Cd9fUJe8a60i9nWhcZ8/edit#gid=0" },
+                { "type": "link", "name": "台灣大哥大支援VoLTE/VoWifi機款說明", "url": "https://www.taiwanmobile.com/csonline/service/ann/ann3_20160407_143146.html" },
+                { "type": "link", "name": "遠傳支援VoLTE/VoWifi機款說明", "url": "https://www.fetnet.net/content/cbu/tw/help-center/detail.html?uuid=cab05b57-d6c7-42a7-a198-2571f60b4133&tagId=cbu:faq/charges/postpaid/VoLTEVoWiFi" },
+                { "type": "link", "name": "中華電信支援VoLTE/VoWifi機款說明", "url": "https://www.cht.com.tw/home/consumer/mobservice/basic/744" },
+                { "type": "link", "name": "台灣之星支援VoLTE/VoWifi機款說明", "url": "https://www.tstartel.com/CWS/vas_VolteMobile.php" },
+                { "type": "link", "name": "出國頻段確認", "url": "https://www.taiwanmobile.com/cs/public/query4GBandIndex.htm" },
+                { "type": "link", "name": "AI功能操作方式", "url": "https://drive.google.com/drive/u/0/folders/1Ojv9Pm6fig6lk3NYN2VIz5Ta5SySI7Ae" }
             ]}
         ]},
         { "type": "folder", "name": "realme", "isOpen": false, "children": [
             { "type": "link", "name": "新ECP", "url": "https://cs-bpo01.qbicloud.com/ecp/" },
             { "type": "link", "name": "ECP", "url": "https://bpo.qbicloud.com/ecp/Qs.MainFrame.page" },
             { "type": "link", "name": "RCSM", "url": "https://rcsm-sg.realmeservice.com/#/login" },
+            { "type": "link", "name": "R-Learning", "url": "https://oln-realme.myoppo.com/login.html" },
+            { "type": "link", "name": "黑貓 企客(帳5438648808/密54386488)", "url": "https://www.takkyubin.com.tw/YMTContract/aspx/Login.aspx" },
+            { "type": "link", "name": "realme文字客服", "url": "https://cs.realme.com.tw/login" },
+            { "type": "link", "name": "realme商店後台登入", "url": "https://auth.91app.com/identity/login?signin=4bdbf5c33f3c3ddd847b35755bd8e98c" },
+            { "type": "link", "name": "realme全產品通路發貨訊息_2020", "url": "https://docs.google.com/spreadsheets/d/1HxXbATqpO1sRvOR3-JNxaUPg2RtT14cRgN1waEDgCtQ/edit#gid=0" },
+            { "type": "link", "name": "realme全產品通路發貨訊息_2021", "url": "https://docs.google.com/spreadsheets/d/19cFZ0T_P3aeol3V4KyrCXpdl1CWJGIfjAYegXAw9mnU/edit#gid=0" },
+            { "type": "link", "name": "realme全產品通路發貨訊息_2022", "url": "https://docs.google.com/spreadsheets/d/1SIFFEpyzJNg9xvvkOxxCITLTdidAdKNX4q-OOc2y7L4/edit#gid=0" },
+            { "type": "link", "name": "realme客服表單(模板罐頭)", "url": "https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1580571186" },
+            { "type": "link", "name": "realme佈達onedrive(oppo@54386488)", "url": "https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" },
+            { "type": "link", "name": "realme佈達(原Onedrive內容)", "url": "https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" },
+            { "type": "link", "name": "realme後拋案件 - 首頁", "url": "https://84459043.sharepoint.com/sites/OPPO-" },
+            { "type": "link", "name": "realme審件後台", "url": "https://app.realme.com.tw/admin" },
+            { "type": "link", "name": "realme官網", "url": "https://www.realme.com/tw/" },
+            { "type": "link", "name": "realme網路商店", "url": "https://www.realme.tw/?utm_source=officialsite&utm_medium=navigation&utm_campaign=realmestore" },
+            { "type": "link", "name": "realme官方粉專", "url": "https://zh-tw.facebook.com/realmeTaiwan/" },
+            { "type": "link", "name": "realme TV聯強國際集團 通達智能運籌", "url": "http://www.logistics-syn.com/index.html" },
+            { "type": "link", "name": "realme維修進度查詢", "url": "https://los.synnex-grp.com/LOS_V/views/rpm/spqi/spqi_main?OA=OA" },
+            { "type": "link", "name": "realme服務進度查詢", "url": "http://tpl.synnex-grp.com/TPL/queryShipStatus.jsp" },
+            { "type": "link", "name": "產品保固", "url": "http://warranty-query.newboomgroup.tw:8012/manager/login" },
+            { "type": "link", "name": "財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)", "url": "https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query" },
+            { "type": "link", "name": "91APP(realme網路商店，詢問關於系統操作、訂單退款、發票/刷卡等疑難雜症)", "url": "https://www.91app.com/contactus/" }
         ]}
     ];
 
@@ -178,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadBookmarks() {
         try {
             const storedBookmarks = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
-            // 簡化預設書籤數據以便測試
             bookmarks = storedBookmarks ? JSON.parse(storedBookmarks) : initialBookmarks;
         } catch (e) {
             console.error("無法載入或解析書籤，將使用預設書籤:", e);
@@ -263,14 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderNodes(bookmarks, rootListElement, []);
     }
     function renderNodes(nodes, parentElement, path) {
-        // --- 修改點 START (新增頂部放置區) ---
-        const topDropzone = document.createElement('li');
-        topDropzone.className = 'top-dropzone';
-        // 將父層路徑存儲起來，方便放置時計算目標路徑
-        topDropzone.dataset.parentPath = JSON.stringify(path);
-        parentElement.appendChild(topDropzone);
-        // --- 修改點 END ---
-
         nodes.forEach((node, index) => {
             const currentPath = [...path, index];
             const li = document.createElement('li');
@@ -366,14 +386,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function startDrag(targetElement, event) {
         if (!targetElement) return;
         isDragging = true;
-        document.body.classList.add('is-dragging'); // 為 body 新增 class 以顯示放置區
-
         draggedElementPath = JSON.parse(targetElement.dataset.path);
         
         if (event && event.dataTransfer) {
             event.dataTransfer.effectAllowed = 'move';
             event.dataTransfer.setData('text/plain', null);
         }
+
         setTimeout(() => targetElement.classList.add('dragging'), 0);
         if (!scrollInterval) scrollInterval = setInterval(autoScroll, 100);
         clearTouchHover();
@@ -383,15 +402,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearIndicators() {
         currentIndicator?.remove();
         currentIndicator = null;
-        document.querySelectorAll('.drop-target-folder, .drop-target-root, .drop-target-top').forEach(el => 
-            el.classList.remove('drop-target-folder', 'drop-target-root', 'drop-target-top')
+        document.querySelectorAll('.drop-target-folder, .drop-target-root').forEach(el => 
+            el.classList.remove('drop-target-folder', 'drop-target-root')
         );
         clearTimeout(openFolderTimer);
     }
 
     function handleMove(e) {
         if (e.type === 'touchmove' && isDragging) {
-            e.preventDefault({ passive: false });
+            e.preventDefault(); 
         }
         if (e.type === 'dragover') { e.preventDefault(); }
         if (!isDragging) return;
@@ -404,34 +423,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const dropTargetElement = document.elementFromPoint(clientX, clientY);
         if (!dropTargetElement) return;
-        
-        // --- 修改點 START (增加頂部/資料夾/項目之間的判斷順序) ---
-        // 判斷順序 1：是否想放入列表頂部？
-        const topDropzone = dropTargetElement.closest('.top-dropzone');
-        if(topDropzone) {
-            topDropzone.classList.add('drop-target-top');
-            return; // 找到目標，結束判斷
-        }
 
-        // 判斷順序 2：是否想放入資料夾？
         const folderSummary = dropTargetElement.closest('.bookmark-folder-summary');
         if (folderSummary) {
             const folderItem = folderSummary.closest('.draggable-item');
             const folderPathStr = folderItem?.dataset.path;
             const draggedPathStr = JSON.stringify(draggedElementPath);
-            const isDroppingOnItselfOrChild = folderPathStr === draggedPathStr || (folderPathStr && draggedPathStr.startsWith(folderPathStr.slice(0, -1) + ','));
-
+            
+            const isDroppingOnItselfOrChild = folderPathStr === draggedPathStr || (folderItem.querySelector('ul') && folderPathStr.startsWith(draggedPathStr.slice(0, -1) + ','));
             if (folderPathStr && !isDroppingOnItselfOrChild) {
                 const folderDetails = folderSummary.closest('.bookmark-folder-details');
                 folderDetails.classList.add('drop-target-folder');
                 if (!folderDetails.open) {
                     openFolderTimer = setTimeout(() => { if (folderDetails) folderDetails.open = true; }, 600);
                 }
-                return; // 找到目標，結束判斷
+                return;
             }
         }
 
-        // 判斷順序 3：是否想放在項目之間？
         const dropTargetItem = dropTargetElement.closest('.draggable-item');
         if (dropTargetItem && dropTargetItem.dataset.path !== JSON.stringify(draggedElementPath)) {
             const rect = dropTargetItem.getBoundingClientRect();
@@ -444,33 +453,25 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 dropTargetItem.after(indicator);
             }
-            return; // 找到目標，結束判斷
+            return;
         }
 
-        // 判斷順序 4：是否想放入根目錄底部？
         const dropTargetRoot = dropTargetElement.closest('#root-dropzone');
         if (dropTargetRoot) {
             dropTargetRoot.classList.add('drop-target-root');
         }
-        // --- 修改點 END ---
     }
     
     function endDrag(e) {
         if (!isDragging) return;
         if (e.type === 'touchend') e.preventDefault();
         
-        const dropTargetTop = document.querySelector('.drop-target-top');
         const dropTargetRoot = document.querySelector('.drop-target-root');
         const dropTargetFolder = document.querySelector('.drop-target-folder');
         const dropIndicator = document.querySelector('.drop-indicator-line');
         let destinationPath;
 
-        // --- 修改點 START (增加對頂部放置區的處理) ---
-        if (dropTargetTop) {
-            const parentPath = JSON.parse(dropTargetTop.dataset.parentPath);
-            destinationPath = [...parentPath, 0];
-        } else if (dropTargetRoot) {
-        // --- 修改點 END ---
+        if (dropTargetRoot) {
             destinationPath = [bookmarks.length];
         } else if (dropTargetFolder) {
             const pathStr = dropTargetFolder.closest('.draggable-item')?.dataset.path;
@@ -514,7 +515,6 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollInterval = null;
         clearIndicators();
         document.querySelector('.dragging')?.classList.remove('dragging');
-        document.body.classList.remove('is-dragging'); // 移除 body 的 class
         draggedElementPath = null;
         isDragging = false;
         clearTimeout(longPressTimer);
@@ -525,12 +525,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function moveNode(sourcePath, destinationPath) {
         const sourcePathStr = JSON.stringify(sourcePath);
         const destPathStr = JSON.stringify(destinationPath);
-        if (sourcePathStr === destPathStr || (destPathStr && sourcePathStr && destPathStr.startsWith(sourcePathStr.slice(0, -1) + ','))) return;
+        if (sourcePathStr === destPathStr || destPathStr.startsWith(sourcePathStr.slice(0, -1) + ',')) return;
 
         const { node: nodeToMove, parentArray: sourceParentArray } = getNodeAndParentArray(sourcePath);
         if (!nodeToMove || !sourceParentArray) return;
         const sourceIndex = sourcePath[sourcePath.length - 1];
-        const [removedItem] = sourceParentArray.splice(sourceIndex, 1);
+        sourceParentArray.splice(sourceIndex, 1);
 
         let adjustedDestPath = [...destinationPath];
         const sourceParentPathStr = JSON.stringify(sourcePath.slice(0, -1));
@@ -553,15 +553,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (destArray) {
             const destIndex = adjustedDestPath[adjustedDestPath.length - 1];
-            destArray.splice(destIndex, 0, removedItem);
+            destArray.splice(destIndex, 0, nodeToMove);
         } else {
             console.error("無法找到有效的目標位置，移動操作已取消。");
-            sourceParentArray.splice(sourceIndex, 0, removedItem);
+            sourceParentArray.splice(sourceIndex, 0, nodeToMove);
         }
     }
     
     function handleTouchStart(e) {
-        if (e.target.closest('.control-btn, .add-btn, a[href]')) return;
+        if (e.target.closest('.control-btn, .add-btn, a')) return;
         
         const target = e.target.closest('.draggable-item');
         if (!target) return;
@@ -569,11 +569,6 @@ document.addEventListener('DOMContentLoaded', () => {
         touchStartEvent = e;
         longPressTimer = setTimeout(() => {
             if(touchStartEvent) {
-                // --- 修改點 START (防止長按選單) ---
-                // 在確認為長按後，阻止瀏覽器預設行為 (如彈出選單)
-                touchStartEvent.preventDefault({ passive: false });
-                // --- 修改點 END ---
-
                 if (navigator.vibrate) navigator.vibrate(50);
                 startDrag(target, null); 
             }
@@ -621,34 +616,13 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTouchHover();
             return;
         }
-
-        const link = e.target.closest('a.bookmark-link');
-        const summary = e.target.closest('summary.bookmark-folder-summary');
-
-        if (link && !targetItem.classList.contains('touch-hover')) {
-             // 如果是第一次點擊連結，並且沒有 hover 效果，就模擬 hover
-             clearTouchHover();
-             targetItem.classList.add('touch-hover');
-             e.preventDefault(); // 阻止第一次點擊直接跳轉，讓用戶有機會點擊編輯/刪除
-             return;
-        }
-        
-        if(summary) {
-            // 點擊 summary 區域，切換 hover 狀態
-            if (targetItem.classList.contains('touch-hover')) {
-                if(!e.target.closest('.item-controls')) {
-                   setTimeout(() => clearTouchHover(), 100);
-                }
-            } else {
-                clearTouchHover();
-                targetItem.classList.add('touch-hover');
+        if (targetItem.classList.contains('touch-hover')) {
+            if (!e.target.closest('.item-controls')) {
+                setTimeout(() => clearTouchHover(), 100); 
             }
-            return;
-        }
-
-        // 如果已經是 hover 狀態，且不是點擊控制按鈕，則取消 hover
-        if (targetItem.classList.contains('touch-hover') && !e.target.closest('.item-controls')) {
-            setTimeout(() => clearTouchHover(), 100); 
+        } else {
+            clearTouchHover();
+            targetItem.classList.add('touch-hover');
         }
     }
     
@@ -666,21 +640,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('touchend', handleTouchEnd);
     document.addEventListener('touchcancel', stopDragAndClear);
 
-    // --- 修改點 START (防止長按選單的另一種方式) ---
-    // 監聽 contextmenu 事件並阻止它，這是桌面右鍵和行動長按的標準事件
-    document.addEventListener('contextmenu', (e) => {
-        // 只在可拖曳的項目上阻止，避免影響頁面其他地方的正常功能
-        if (e.target.closest('.draggable-item')) {
-            e.preventDefault();
-        }
-    });
-    // --- 修改點 END ---
-
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.bookmark-item')) {
             clearTouchHover();
         }
-    }, true); // 使用捕獲階段確保能處理
+    });
 
     // --- 初始化 ---
     addMainFolderBtn.addEventListener('click', () => addItem([], 'folder'));
