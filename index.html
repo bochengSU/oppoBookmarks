@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的書籤 (最終功能版)</title>
+    <title>我的書籤 (v4.0 專業版)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
@@ -48,13 +48,13 @@
         }
         /* Styling for each bookmark item */
         .bookmark-item {
-            margin-bottom: 10px;
+            margin-bottom: 2px; /* 減小間距，讓縫隙更自然 */
             position: relative;
         }
         /* Styling for folder (details/summary) */
         .bookmark-folder-details {
-            margin-top: 15px;
-            margin-bottom: 15px;
+            margin-top: 10px;
+            margin-bottom: 10px;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             background-color: #fcfcfc;
@@ -101,13 +101,16 @@
             text-decoration: none;
             color: #555;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-            border-bottom: 1px solid #f0f0f0;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #fff;
         }
         .bookmark-item:hover .bookmark-link {
              background-color: #eef5ff;
              color: #007bff;
+             border-color: #cce5ff;
         }
-        .bookmark-link:last-child { border-bottom: none; }
+        .bookmark-link:last-child { border-bottom: 1px solid #eee; }
         /* Favicon styling */
         .bookmark-icon {
             width: 16px;
@@ -130,14 +133,8 @@
         .bookmark-item:hover .item-controls,
         .bookmark-folder-summary:hover .item-controls { opacity: 1; }
         .control-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 2px 5px;
-            border-radius: 4px;
-            line-height: 1;
-            color: #555;
+            background: none; border: none; cursor: pointer; font-size: 16px; padding: 2px 5px;
+            border-radius: 4px; line-height: 1; color: #555;
         }
         .control-btn:hover { background-color: rgba(0, 0, 0, 0.1); color: #000; }
         /* Action buttons styling */
@@ -147,43 +144,37 @@
             background-color: #fdfdfd;
         }
         .add-btn {
-            background-color: #e8f0fe;
-            color: #34495e;
-            border: 1px solid #d0d8e0;
-            padding: 4px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            margin-right: 10px;
+            background-color: #e8f0fe; color: #34495e; border: 1px solid #d0d8e0;
+            padding: 4px 10px; border-radius: 5px; cursor: pointer;
+            font-size: 0.9em; margin-right: 10px;
         }
         .add-btn:hover { background-color: #dbe8fd; }
         .main-add-button-container { text-align: center; margin-bottom: 25px; }
-        /* Drag & Drop styling */
+
+        /* --- Drag & Drop styling --- */
         .draggable-item.dragging {
             opacity: 0.4;
             background: #cce5ff;
         }
-        .drop-target-item {
-            border: 2px dashed #007bff !important;
+        .drop-target-folder { /* 用於高亮整個資料夾 */
+            box-shadow: 0 0 0 2px #007bff !important;
             background-color: #eef5ff !important;
         }
+        .drop-indicator-line { /* 插入線 */
+            height: 4px;
+            background-color: #0d6efd;
+            border-radius: 2px;
+            margin: -2px 0;
+        }
         #root-dropzone {
-            height: 50px;
-            margin-top: 15px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9em;
-            color: #aaa;
-            border: 2px dashed transparent;
-            transition: all 0.2s ease-in-out;
+            height: 50px; margin-top: 15px; border-radius: 8px; display: flex;
+            align-items: center; justify-content: center; font-size: 0.9em;
+            color: #aaa; border: 2px dashed transparent; transition: all 0.2s ease-in-out;
         }
         #root-dropzone.drop-target-root {
-            border-color: #007bff;
-            background-color: #eef5ff;
-            color: #007bff;
+            border-color: #007bff; background-color: #eef5ff; color: #007bff;
         }
+
         /* Responsive adjustments */
         @media (max-width: 600px) {
             body { padding: 10px; }
@@ -216,109 +207,132 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 完整的初始書籤資料 (從 indextest.html 提取) ---
     const initialBookmarks = [
-        {
-            "type": "folder",
-            "name": "書籤列",
-            "isOpen": true,
-            "children": [
-                { "type": "link", "name": "Microsoft Office", "url": "https://www.office.com/?auth=2" },
-                { "type": "link", "name": "eHRS(線上人資)", "url": "http://cshr.chainsea.com.tw/Ehrsnet/Account/Index#Home" },
-                {
-                    "type": "folder",
-                    "name": "OPPO",
-                    "isOpen": false,
-                    "children": [
-                        { "type": "link", "name": "Twilio", "url": "https://flex.twilio.com/lion-bloodhound-6675" },
-                        { "type": "link", "name": "WCSM", "url": "https://service-sg.myoppo.com/login" },
-                        { "type": "link", "name": "統一認證中心", "url": "https://sso.myoas.com/siam/login?service=https%3A%2F%2Fsso.myoas.com%2Fsiam%2Foauth2.0%2FcallbackAuthorize%3Foauth20_callbackUrl%3Dhttps%3A%2F%2Fgcsm-sg.oppoit.com%2Fportal%2Fapi%2Fv1%2Fsso%2Fcallback&oauth20_state=https%3A%2F%2Fgcsm-sg.oppoit.com%2Forder%2Forder-management%2Fafter-sales-order" },
-                        { "type": "link", "name": "黑貓貨態", "url": "https://www.t-cat.com.tw/inquire/trace.aspx" },
-                        { "type": "link", "name": "智齒", "url": "https://chat-sg.oppo.com/console/home/myReception" },
-                        { "type": "link", "name": "oppo文字客服", "url": "https://cs.oppo-aed.tw/login#/login" },
-                        { "type": "link", "name": "OPPO體驗店", "url": "https://docs.google.com/spreadsheets/d/1CtwmIZublKb_yUYqgdLByM8ffwrYhBV9z1b931KY_2w/edit?copiedFromTrash#gid=1454694516" },
-                        { "type": "link", "name": "OPPO表單(模板罐頭)", "url": "https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1307372469" },
-                        { "type": "link", "name": "OPPO機型料件永缺表", "url": "https://docs.google.com/spreadsheets/d/1DzbmFhv5GFf8-p5DkKlHimzvRou1LyLS/edit?gid=1640156935#gid=1640156935" },
-                        { "type": "link", "name": "OPPO操作罐頭", "url": "https://docs.google.com/spreadsheets/d/16aizSwEhaRzNbnq02eb2esDvsTtWHTgw/edit#gid=1738325245" },
-                        { "type": "link", "name": "OPPO手機分析表", "url": "https://docs.google.com/spreadsheets/d/1ihphqb5kwbZ5VGPhvh5mdLl_OOp6OR1Z/edit#gid=948748319" },
-                        { "type": "link", "name": "Airtable(佈達資訊)", "url": "https://airtable.com/appo0Lgi88CH67Fko/tbldP4APTKOM2lWmx/viwb3JTf6h9erucdE?blocks=hide" },
-                        { "type": "link", "name": "OPPO佈達onedrive(oppo@54386488)", "url": "https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" },
-                        { "type": "link", "name": "OPPO佈達(原Onedrive內容)", "url": "https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" },
-                        { "type": "link", "name": "OPPO後拋案件 - 首頁", "url": "https://84459043.sharepoint.com/sites/OPPO-" },
-                        { "type": "link", "name": "OPPO Life", "url": "https://app.oppo-aed.tw/admin" },
-                        { "type": "link", "name": "CYBERBIZ後台管理", "url": "https://oppo.cyberbiz.co/user/sign_in" },
-                        { "type": "link", "name": "OPPO官網", "url": "https://www.oppo.com/tw/" },
-                        { "type": "link", "name": "OPPO網路商店", "url": "https://estore.oppo-aed.tw/?utm_campaign=estore&utm_medium=button&utm_source=officialweb" },
-                        { "type": "link", "name": "OPPO官網(全球)", "url": "https://www.oppo.com/en/choose-site/" },
-                        { "type": "link", "name": "HeyTap官網", "url": "https://brand.heytap.com/cn/business.html" },
-                        { "type": "link", "name": "OPPO官方粉專", "url": "https://zh-tw.facebook.com/OPPOTaiwan/" },
-                        { "type": "link", "name": "神揚保代(帳/密54386488)", "url": "https://insurance.senyoung.com.tw/default.aspx" },
-                        { "type": "link", "name": "產品保固", "url": "http://warranty-query.newboomgroup.tw:8012/manager/login" },
-                        { "type": "link", "name": "財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)", "url": "https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query" },
-                        { "type": "link", "name": "三大電信 - Google 試算表", "url": "https://docs.google.com/spreadsheets/d/16rPtb3sIXBZ92mK5Xdnskc39Cd9fUJe8a60i9nWhcZ8/edit#gid=0" },
-                        { "type": "link", "name": "台灣大哥大支援VoLTE/VoWifi機款說明", "url": "https://www.taiwanmobile.com/csonline/service/ann/ann3_20160407_143146.html" },
-                        { "type": "link", "name": "遠傳支援VoLTE/VoWifi機款說明", "url": "https://www.fetnet.net/content/cbu/tw/help-center/detail.html?uuid=cab05b57-d6c7-42a7-a198-2571f60b4133&tagId=cbu:faq/charges/postpaid/VoLTEVoWiFi" },
-                        { "type": "link", "name": "中華電信支援VoLTE/VoWifi機款說明", "url": "https://www.cht.com.tw/home/consumer/mobservice/basic/744" },
-                        { "type": "link", "name": "台灣之星支援VoLTE/VoWifi機款說明", "url": "https://www.tstartel.com/CWS/vas_VolteMobile.php" },
-                        { "type": "link", "name": "出國頻段確認", "url": "https://www.taiwanmobile.com/cs/public/query4GBandIndex.htm" },
-                        { "type": "link", "name": "AI功能操作方式", "url": "https://drive.google.com/drive/u/0/folders/1Ojv9Pm6fig6lk3NYN2VIz5Ta5SySI7Ae" }
-                    ]
-                }
-            ]
-        },
-        {
-            "type": "folder",
-            "name": "realme",
-            "isOpen": false,
-            "children": [
-                { "type": "link", "name": "新ECP", "url": "https://cs-bpo01.qbicloud.com/ecp/" },
-                { "type": "link", "name": "ECP", "url": "https://bpo.qbicloud.com/ecp/Qs.MainFrame.page" },
-                { "type": "link", "name": "RCSM", "url": "https://rcsm-sg.realmeservice.com/#/login" },
-                { "type": "link", "name": "R-Learning", "url": "https://oln-realme.myoppo.com/login.html" },
-                { "type": "link", "name": "黑貓 企客(帳5438648808/密54386488)", "url": "https://www.takkyubin.com.tw/YMTContract/aspx/Login.aspx" },
-                { "type": "link", "name": "realme文字客服", "url": "https://cs.realme.com.tw/login" },
-                { "type": "link", "name": "realme商店後台登入", "url": "https://auth.91app.com/identity/login?signin=4bdbf5c33f3c3ddd847b35755bd8e98c" },
-                { "type": "link", "name": "realme全產品通路發貨訊息_2020", "url": "https://docs.google.com/spreadsheets/d/1HxXbATqpO1sRvOR3-JNxaUPg2RtT14cRgN1waEDgCtQ/edit#gid=0" },
-                { "type": "link", "name": "realme全產品通路發貨訊息_2021", "url": "https://docs.google.com/spreadsheets/d/19cFZ0T_P3aeol3V4KyrCXpdl1CWJGIfjAYegXAw9mnU/edit#gid=0" },
-                { "type": "link", "name": "realme全產品通路發貨訊息_2022", "url": "https://docs.google.com/spreadsheets/d/1SIFFEpyzJNg9xvvkOxxCITLTdidAdKNX4q-OOc2y7L4/edit#gid=0" },
-                { "type": "link", "name": "realme客服表單(模板罐頭)", "url": "https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1580571186" },
-                { "type": "link", "name": "realme佈達onedrive(oppo@54386488)", "url": "https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" },
-                { "type": "link", "name": "realme佈達(原Onedrive內容)", "url": "https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" },
-                { "type": "link", "name": "realme後拋案件 - 首頁", "url": "https://84459043.sharepoint.com/sites/OPPO-" },
-                { "type": "link", "name": "realme審件後台", "url": "https://app.realme.com.tw/admin" },
-                { "type": "link", "name": "realme官網", "url": "https://www.realme.com/tw/" },
-                { "type": "link", "name": "realme網路商店", "url": "https://www.realme.tw/?utm_source=officialsite&utm_medium=navigation&utm_campaign=realmestore" },
-                { "type": "link", "name": "realme官方粉專", "url": "https://zh-tw.facebook.com/realmeTaiwan/" },
-                { "type": "link", "name": "realme TV聯強國際集團 通達智能運籌", "url": "http://www.logistics-syn.com/index.html" },
-                { "type": "link", "name": "realme維修進度查詢", "url": "https://los.synnex-grp.com/LOS_V/views/rpm/spqi/spqi_main?OA=OA" },
-                { "type": "link", "name": "realme服務進度查詢", "url": "http://tpl.synnex-grp.com/TPL/queryShipStatus.jsp" },
+        { "type": "folder", "name": "書籤列", "isOpen": true, "children": [
+            { "type": "link", "name": "Microsoft Office", "url": "https://www.office.com/?auth=2" },
+            { "type": "link", "name": "eHRS(線上人資)", "url": "http://cshr.chainsea.com.tw/Ehrsnet/Account/Index#Home" },
+            { "type": "folder", "name": "OPPO", "isOpen": false, "children": [
+                { "type": "link", "name": "Twilio", "url": "https://flex.twilio.com/lion-bloodhound-6675" },
+                { "type": "link", "name": "WCSM", "url": "https://service-sg.myoppo.com/login" },
+                { "type": "link", "name": "統一認證中心", "url": "https://sso.myoas.com/siam/login?service=https%3A%2F%2Fsso.myoas.com%2Fsiam%2Foauth2.0%2FcallbackAuthorize%3Foauth20_callbackUrl%3Dhttps%3A%2F%2Fgcsm-sg.oppoit.com%2Fportal%2Fapi%2Fv1%2Fsso%2Fcallback&oauth20_state=https%3A%2F%2Fgcsm-sg.oppoit.com%2Forder%2Forder-management%2Fafter-sales-order" },
+                { "type": "link", "name": "黑貓貨態", "url": "https://www.t-cat.com.tw/inquire/trace.aspx" },
+                { "type": "link", "name": "智齒", "url": "https://chat-sg.oppo.com/console/home/myReception" },
+                { "type": "link", "name": "oppo文字客服", "url": "https://cs.oppo-aed.tw/login#/login" },
+                { "type": "link", "name": "OPPO體驗店", "url": "https://docs.google.com/spreadsheets/d/1CtwmIZublKb_yUYqgdLByM8ffwrYhBV9z1b931KY_2w/edit?copiedFromTrash#gid=1454694516" },
+                { "type": "link", "name": "OPPO表單(模板罐頭)", "url": "https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1307372469" },
+                { "type": "link", "name": "OPPO機型料件永缺表", "url": "https://docs.google.com/spreadsheets/d/1DzbmFhv5GFf8-p5DkKlHimzvRou1LyLS/edit?gid=1640156935#gid=1640156935" },
+                { "type": "link", "name": "OPPO操作罐頭", "url": "https://docs.google.com/spreadsheets/d/16aizSwEhaRzNbnq02eb2esDvsTtWHTgw/edit#gid=1738325245" },
+                { "type": "link", "name": "OPPO手機分析表", "url": "https://docs.google.com/spreadsheets/d/1ihphqb5kwbZ5VGPhvh5mdLl_OOp6OR1Z/edit#gid=948748319" },
+                { "type": "link", "name": "Airtable(佈達資訊)", "url": "https://airtable.com/appo0Lgi88CH67Fko/tbldP4APTKOM2lWmx/viwb3JTf6h9erucdE?blocks=hide" },
+                { "type": "link", "name": "OPPO佈達onedrive(oppo@54386488)", "url": "https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" },
+                { "type": "link", "name": "OPPO佈達(原Onedrive內容)", "url": "https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" },
+                { "type": "link", "name": "OPPO後拋案件 - 首頁", "url": "https://84459043.sharepoint.com/sites/OPPO-" },
+                { "type": "link", "name": "OPPO Life", "url": "https://app.oppo-aed.tw/admin" },
+                { "type": "link", "name": "CYBERBIZ後台管理", "url": "https://oppo.cyberbiz.co/user/sign_in" },
+                { "type": "link", "name": "OPPO官網", "url": "https://www.oppo.com/tw/" },
+                { "type": "link", "name": "OPPO網路商店", "url": "https://estore.oppo-aed.tw/?utm_campaign=estore&utm_medium=button&utm_source=officialweb" },
+                { "type": "link", "name": "OPPO官網(全球)", "url": "https://www.oppo.com/en/choose-site/" },
+                { "type": "link", "name": "HeyTap官網", "url": "https://brand.heytap.com/cn/business.html" },
+                { "type": "link", "name": "OPPO官方粉專", "url": "https://zh-tw.facebook.com/OPPOTaiwan/" },
+                { "type": "link", "name": "神揚保代(帳/密54386488)", "url": "https://insurance.senyoung.com.tw/default.aspx" },
                 { "type": "link", "name": "產品保固", "url": "http://warranty-query.newboomgroup.tw:8012/manager/login" },
                 { "type": "link", "name": "財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)", "url": "https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query" },
-                { "type": "link", "name": "91APP(realme網路商店，詢問關於系統操作、訂單退款、發票/刷卡等疑難雜症)", "url": "https://www.91app.com/contactus/" }
-            ]
-        }
+                { "type": "link", "name": "三大電信 - Google 試算表", "url": "https://docs.google.com/spreadsheets/d/16rPtb3sIXBZ92mK5Xdnskc39Cd9fUJe8a60i9nWhcZ8/edit#gid=0" },
+                { "type": "link", "name": "台灣大哥大支援VoLTE/VoWifi機款說明", "url": "https://www.taiwanmobile.com/csonline/service/ann/ann3_20160407_143146.html" },
+                { "type": "link", "name": "遠傳支援VoLTE/VoWifi機款說明", "url": "https://www.fetnet.net/content/cbu/tw/help-center/detail.html?uuid=cab05b57-d6c7-42a7-a198-2571f60b4133&tagId=cbu:faq/charges/postpaid/VoLTEVoWiFi" },
+                { "type": "link", "name": "中華電信支援VoLTE/VoWifi機款說明", "url": "https://www.cht.com.tw/home/consumer/mobservice/basic/744" },
+                { "type": "link", "name": "台灣之星支援VoLTE/VoWifi機款說明", "url": "https://www.tstartel.com/CWS/vas_VolteMobile.php" },
+                { "type": "link", "name": "出國頻段確認", "url": "https://www.taiwanmobile.com/cs/public/query4GBandIndex.htm" },
+                { "type": "link", "name": "AI功能操作方式", "url": "https://drive.google.com/drive/u/0/folders/1Ojv9Pm6fig6lk3NYN2VIz5Ta5SySI7Ae" }
+            ]}
+        ]},
+        { "type": "folder", "name": "realme", "isOpen": false, "children": [
+            { "type": "link", "name": "新ECP", "url": "https://cs-bpo01.qbicloud.com/ecp/" },
+            { "type": "link", "name": "ECP", "url": "https://bpo.qbicloud.com/ecp/Qs.MainFrame.page" },
+            { "type": "link", "name": "RCSM", "url": "https://rcsm-sg.realmeservice.com/#/login" },
+            { "type": "link", "name": "R-Learning", "url": "https://oln-realme.myoppo.com/login.html" },
+            { "type": "link", "name": "黑貓 企客(帳5438648808/密54386488)", "url": "https://www.takkyubin.com.tw/YMTContract/aspx/Login.aspx" },
+            { "type": "link", "name": "realme文字客服", "url": "https://cs.realme.com.tw/login" },
+            { "type": "link", "name": "realme商店後台登入", "url": "https://auth.91app.com/identity/login?signin=4bdbf5c33f3c3ddd847b35755bd8e98c" },
+            { "type": "link", "name": "realme全產品通路發貨訊息_2020", "url": "https://docs.google.com/spreadsheets/d/1HxXbATqpO1sRvOR3-JNxaUPg2RtT14cRgN1waEDgCtQ/edit#gid=0" },
+            { "type": "link", "name": "realme全產品通路發貨訊息_2021", "url": "https://docs.google.com/spreadsheets/d/19cFZ0T_P3aeol3V4KyrCXpdl1CWJGIfjAYegXAw9mnU/edit#gid=0" },
+            { "type": "link", "name": "realme全產品通路發貨訊息_2022", "url": "https://docs.google.com/spreadsheets/d/1SIFFEpyzJNg9xvvkOxxCITLTdidAdKNX4q-OOc2y7L4/edit#gid=0" },
+            { "type": "link", "name": "realme客服表單(模板罐頭)", "url": "https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1580571186" },
+            { "type": "link", "name": "realme佈達onedrive(oppo@54386488)", "url": "https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" },
+            { "type": "link", "name": "realme佈達(原Onedrive內容)", "url": "https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" },
+            { "type": "link", "name": "realme後拋案件 - 首頁", "url": "https://84459043.sharepoint.com/sites/OPPO-" },
+            { "type": "link", "name": "realme審件後台", "url": "https://app.realme.com.tw/admin" },
+            { "type": "link", "name": "realme官網", "url": "https://www.realme.com/tw/" },
+            { "type": "link", "name": "realme網路商店", "url": "https://www.realme.tw/?utm_source=officialsite&utm_medium=navigation&utm_campaign=realmestore" },
+            { "type": "link", "name": "realme官方粉專", "url": "https://zh-tw.facebook.com/realmeTaiwan/" },
+            { "type": "link", "name": "realme TV聯強國際集團 通達智能運籌", "url": "http://www.logistics-syn.com/index.html" },
+            { "type": "link", "name": "realme維修進度查詢", "url": "https://los.synnex-grp.com/LOS_V/views/rpm/spqi/spqi_main?OA=OA" },
+            { "type": "link", "name": "realme服務進度查詢", "url": "http://tpl.synnex-grp.com/TPL/queryShipStatus.jsp" },
+            { "type": "link", "name": "產品保固", "url": "http://warranty-query.newboomgroup.tw:8012/manager/login" },
+            { "type": "link", "name": "財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)", "url": "https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query" },
+            { "type": "link", "name": "91APP(realme網路商店，詢問關於系統操作、訂單退款、發票/刷卡等疑難雜症)", "url": "https://www.91app.com/contactus/" }
+        ]}
     ];
 
-    // ------------------- 資料處理 -------------------
+    // ------------------- 資料處理 & 核心功能 -------------------
+    // (這部分程式碼與前一版本幾乎相同，保持其穩定性)
     function loadBookmarks() {
         try {
             const storedBookmarks = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
             bookmarks = storedBookmarks ? JSON.parse(storedBookmarks) : initialBookmarks;
-        } catch (e) {
-            console.error("無法載入書籤:", e);
-            bookmarks = initialBookmarks;
-        }
+        } catch (e) { console.error("無法載入書籤:", e); bookmarks = initialBookmarks; }
     }
-    function saveBookmarks() {
-        localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(bookmarks, null, 2));
-    }
+    function saveBookmarks() { localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(bookmarks, null, 2)); }
     function getFaviconUrl(url) {
-        try {
-            return `https://www.google.com/s2/favicons?sz=32&domain_url=${new URL(url).hostname}`;
-        } catch (e) {
-            return "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+        try { return `https://www.google.com/s2/favicons?sz=32&domain_url=${new URL(url).hostname}`; } 
+        catch (e) { return "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; }
+    }
+    function getNodeAndParentArray(path) {
+        if (!path || path.length === 0) return { node: null, parentArray: bookmarks };
+        let parentArray = bookmarks;
+        for (let i = 0; i < path.length - 1; i++) {
+            const parentNode = parentArray[path[i]];
+            if (parentNode?.type === 'folder' && parentNode.children) { parentArray = parentNode.children; } 
+            else { return { node: null, parentArray: null }; }
+        }
+        return { node: parentArray[path[path.length - 1]], parentArray };
+    }
+    function addItem(path, type) {
+        const { node } = getNodeAndParentArray(path);
+        const targetArray = path.length === 0 ? bookmarks : node.children;
+        const name = prompt(`請輸入新的${type === 'link' ? '書籤' : '資料夾'}名稱：`);
+        if (!name) return;
+        if (type === 'link') {
+            const url = prompt("請輸入網址 (URL)：", "https://");
+            if (!url) return;
+            targetArray.push({ type: 'link', name, url });
+        } else {
+            targetArray.push({ type: 'folder', name, children: [], isOpen: true });
+        }
+        saveAndRerender();
+    }
+    function editItem(path) {
+        const { node } = getNodeAndParentArray(path);
+        if (!node) return;
+        const newName = prompt("請輸入新的名稱：", node.name);
+        if (newName === null || newName === "") return;
+        node.name = newName;
+        if (node.type === 'link') {
+            const newUrl = prompt("請輸入新的網址：", node.url);
+            if (newUrl !== null) node.url = newUrl;
+        }
+        saveAndRerender();
+    }
+    function deleteItem(path) {
+        const { node, parentArray } = getNodeAndParentArray(path);
+        if (!node || !parentArray) return;
+        if (confirm(`確定要刪除 "${node.name}" 嗎？`)) {
+            parentArray.splice(path[path.length - 1], 1);
+            saveAndRerender();
         }
     }
-
-    // ------------------- 渲染畫面 -------------------
+    function saveAndRerender() { saveBookmarks(); render(); }
+    
+    // ------------------- 渲染畫面 (包含拖曳屬性) -------------------
     function render() {
         rootListElement.innerHTML = '';
         renderNodes(bookmarks, rootListElement, []);
@@ -399,128 +413,137 @@ document.addEventListener('DOMContentLoaded', () => {
         return folderActions;
     }
 
-    // ------------------- 互動邏輯 -------------------
-    function getNodeAndParentArray(path) {
-        if (!path || path.length === 0) return { node: null, parentArray: bookmarks };
-        let parentArray = bookmarks;
-        for (let i = 0; i < path.length - 1; i++) {
-            const parentNode = parentArray[path[i]];
-            if (parentNode?.type === 'folder' && parentNode.children) {
-                 parentArray = parentNode.children;
-            } else { return { node: null, parentArray: null }; }
+    // ------------------- 拖曳邏輯 (含自動捲動與縫隙放置) -------------------
+    let draggedElementPath = null;
+    let scrollInterval = null;
+    let lastMouseY = 0;
+    const SCROLL_ZONE_SIZE = 60; // 邊緣捲動區的大小 (像素)
+    const SCROLL_SPEED = 15; // 捲動速度
+
+    function autoScroll() {
+        if (lastMouseY < SCROLL_ZONE_SIZE) {
+            window.scrollBy(0, -SCROLL_SPEED);
+        } else if (lastMouseY > window.innerHeight - SCROLL_ZONE_SIZE) {
+            window.scrollBy(0, SCROLL_SPEED);
         }
-        return { node: parentArray[path[path.length - 1]], parentArray };
-    }
-    function addItem(path, type) {
-        const { node } = getNodeAndParentArray(path);
-        const targetArray = path.length === 0 ? bookmarks : node.children;
-        const name = prompt(`請輸入新的${type === 'link' ? '書籤' : '資料夾'}名稱：`);
-        if (!name) return;
-        if (type === 'link') {
-            const url = prompt("請輸入網址 (URL)：", "https://");
-            if (!url) return;
-            targetArray.push({ type: 'link', name, url });
-        } else {
-            targetArray.push({ type: 'folder', name, children: [], isOpen: true });
-        }
-        saveAndRerender();
-    }
-    function editItem(path) {
-        const { node } = getNodeAndParentArray(path);
-        if (!node) return;
-        const newName = prompt("請輸入新的名稱：", node.name);
-        if (newName === null || newName === "") return;
-        node.name = newName;
-        if (node.type === 'link') {
-            const newUrl = prompt("請輸入新的網址：", node.url);
-            if (newUrl !== null) node.url = newUrl;
-        }
-        saveAndRerender();
-    }
-    function deleteItem(path) {
-        const { node, parentArray } = getNodeAndParentArray(path);
-        if (!node || !parentArray) return;
-        if (confirm(`確定要刪除 "${node.name}" 嗎？`)) {
-            parentArray.splice(path[path.length - 1], 1);
-            saveAndRerender();
-        }
-    }
-    function saveAndRerender() {
-        saveBookmarks();
-        render();
     }
 
-    // ------------------- 拖曳邏輯 -------------------
-    let draggedElementPath = null;
     document.addEventListener('dragstart', e => {
         const target = e.target.closest('.draggable-item');
         if (target) {
             draggedElementPath = JSON.parse(target.dataset.path);
             e.dataTransfer.effectAllowed = 'move';
             setTimeout(() => target.classList.add('dragging'), 0);
+            if (!scrollInterval) {
+                scrollInterval = setInterval(autoScroll, 100);
+            }
         }
     });
+
+    let currentIndicator = null;
+    function clearIndicators() {
+        if (currentIndicator) {
+            currentIndicator.remove();
+            currentIndicator = null;
+        }
+        document.querySelectorAll('.drop-target-folder, .drop-target-root').forEach(el => {
+            el.classList.remove('drop-target-folder', 'drop-target-root');
+        });
+    }
+
     document.addEventListener('dragover', e => {
         e.preventDefault();
-        const dropTargetItem = e.target.closest('.bookmark-item, .bookmark-folder-summary');
+        lastMouseY = e.clientY;
+        
+        clearIndicators();
+
+        const dropTargetItem = e.target.closest('.draggable-item');
         const dropTargetRoot = e.target.closest('#root-dropzone');
         
-        document.querySelectorAll('.drop-target-item, .drop-target-root').forEach(el => 
-            el.classList.remove('drop-target-item', 'drop-target-root')
-        );
-
-        if (dropTargetItem) {
-            const targetElement = dropTargetItem.classList.contains('bookmark-folder-summary') ? 
-                dropTargetItem.closest('.bookmark-folder-details') : 
-                dropTargetItem;
-            targetElement.classList.add('drop-target-item');
-        } else if (dropTargetRoot) {
+        if (dropTargetRoot) {
             dropTargetRoot.classList.add('drop-target-root');
+        } else if (dropTargetItem) {
+            const rect = dropTargetItem.getBoundingClientRect();
+            const isFolderSummary = e.target.closest('.bookmark-folder-summary');
+
+            // 放入資料夾的邏輯
+            if (isFolderSummary) {
+                isFolderSummary.closest('.bookmark-folder-details').classList.add('drop-target-folder');
+                return; // 優先處理放入資料夾
+            }
+            
+            // 縫隙放置的邏輯
+            const midpoint = rect.top + rect.height / 2;
+            const indicator = document.createElement('div');
+            indicator.className = 'drop-indicator-line';
+            currentIndicator = indicator;
+
+            if (e.clientY < midpoint) {
+                dropTargetItem.before(indicator);
+            } else {
+                dropTargetItem.after(indicator);
+            }
         }
     });
-    document.addEventListener('dragleave', e => {
-        const target = e.target.closest('.drop-target-item, .drop-target-root');
-        if (target && !target.contains(e.relatedTarget)) {
-            target.classList.remove('drop-target-item', 'drop-target-root');
-        }
-    });
-    document.addEventListener('dragend', () => {
-        document.querySelectorAll('.dragging, .drop-target-item, .drop-target-root').forEach(el => 
-            el.classList.remove('dragging', 'drop-target-item', 'drop-target-root')
-        );
+    
+    function stopDrag() {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+        clearIndicators();
+        document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
         draggedElementPath = null;
-    });
+    }
+
+    document.addEventListener('dragend', stopDrag);
     document.addEventListener('drop', e => {
         e.preventDefault();
         e.stopPropagation();
-        if (!draggedElementPath) return;
+        if (!draggedElementPath) return stopDrag();
 
-        const dropTargetItem = e.target.closest('.bookmark-item, .bookmark-folder-summary');
-        const dropTargetRoot = e.target.closest('#root-dropzone');
+        const dropTargetRoot = document.querySelector('.drop-target-root');
+        const dropTargetFolder = document.querySelector('.drop-target-folder');
+        const dropIndicator = document.querySelector('.drop-indicator-line');
         let destinationPath;
 
         if (dropTargetRoot) {
-            destinationPath = [bookmarks.length]; // 放到根目錄最後
-        } else if (dropTargetItem) {
-            const destinationPathStr = dropTargetItem.closest('.draggable-item').dataset.path;
-            const path = JSON.parse(destinationPathStr);
-            const { node: destNode } = getNodeAndParentArray(path);
-            if (destNode.type === 'folder' && JSON.stringify(draggedElementPath) !== destinationPathStr) {
-                 destinationPath = [...path, destNode.children.length]; // 放入資料夾
-            } else {
-                 destinationPath = path; // 排序
+            destinationPath = [bookmarks.length];
+        } else if (dropTargetFolder) {
+            const pathStr = dropTargetFolder.closest('.draggable-item').dataset.path;
+            const path = JSON.parse(pathStr);
+            const { node } = getNodeAndParentArray(path);
+            if (node?.type === 'folder') {
+                destinationPath = [...path, node.children.length];
             }
-        } else {
-            return;
+        } else if (dropIndicator) {
+            const prevSibling = dropIndicator.previousElementSibling;
+            const nextSibling = dropIndicator.nextElementSibling;
+            if (nextSibling && nextSibling.matches('.draggable-item')) {
+                destinationPath = JSON.parse(nextSibling.dataset.path);
+            } else if (prevSibling && prevSibling.matches('.draggable-item')) {
+                const path = JSON.parse(prevSibling.dataset.path);
+                path[path.length - 1]++;
+                destinationPath = path;
+            } else { // 列表中的第一個
+                const parentUl = dropIndicator.parentElement;
+                if(parentUl.id === 'bookmark-list-root') {
+                    destinationPath = [0];
+                } else {
+                    const parentPath = JSON.parse(parentUl.closest('.draggable-item').dataset.path);
+                    destinationPath = [...parentPath, 0];
+                }
+            }
         }
-        
-        moveNode(draggedElementPath, destinationPath);
-        saveAndRerender();
+
+        if (destinationPath) {
+            moveNode(draggedElementPath, destinationPath);
+            saveAndRerender();
+        }
+        stopDrag();
     });
     
     function moveNode(sourcePath, destinationPath) {
         if (JSON.stringify(sourcePath) === JSON.stringify(destinationPath)) return;
-        if (JSON.stringify(destinationPath).startsWith(JSON.stringify(sourcePath))) return;
+        if (JSON.stringify(destinationPath).startsWith(JSON.stringify(sourcePath) + ',')) return;
 
         const { node: nodeToMove, parentArray: sourceParentArray } = getNodeAndParentArray(sourcePath);
         if (!nodeToMove) return;
@@ -535,9 +558,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const { parentArray: destParentArray } = getNodeAndParentArray(adjustedDestPath);
-        if (!destParentArray) return;
-        const destIndex = adjustedDestPath[adjustedDestPath.length - 1];
-        destParentArray.splice(destIndex, 0, nodeToMove);
+        if (!destParentArray) { // 如果目標是根目錄
+             bookmarks.splice(adjustedDestPath[0], 0, nodeToMove);
+        } else {
+            const destIndex = adjustedDestPath[adjustedDestPath.length - 1];
+            destParentArray.splice(destIndex, 0, nodeToMove);
+        }
     }
     
     // ------------------- 初始化 -------------------
