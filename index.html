@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的書籤</title>
+    <title>我的書籤 (最終功能版)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
@@ -17,7 +17,6 @@
             color: #333;
             line-height: 1.6;
         }
-
         /* Main Container for the Bookmarks */
         .bookmark-container {
             max-width: 900px;
@@ -27,35 +26,31 @@
             border-radius: 12px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         }
-
         h1 {
             color: #2c3e50;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 2.2em;
             font-weight: 700;
             border-bottom: 2px solid #e0e0e0;
             padding-bottom: 15px;
         }
-
         /* Styling for the main list and nested lists */
         .bookmark-list {
-            list-style-type: none; /* Remove default bullet points */
+            list-style-type: none;
             padding-left: 0;
             margin: 0;
         }
-
         .bookmark-list ul {
             list-style-type: none;
-            padding-left: 25px; /* Indent nested lists */
+            padding-left: 25px;
             margin: 5px 0;
         }
-
         /* Styling for each bookmark item */
         .bookmark-item {
             margin-bottom: 10px;
+            position: relative;
         }
-
         /* Styling for folder (details/summary) */
         .bookmark-folder-details {
             margin-top: 15px;
@@ -63,501 +58,495 @@
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             background-color: #fcfcfc;
-            overflow: hidden; /* Ensures border-radius applies to contents */
+            overflow: hidden;
         }
-
         .bookmark-folder-details[open] > summary {
-            background-color: #e8f0fe; /* Lighter background when open */
+            background-color: #e8f0fe;
             border-bottom: 1px solid #d0d0d0;
         }
-
         .bookmark-folder-summary {
             font-weight: 700;
             cursor: pointer;
             padding: 12px 15px;
-            background-color: #f0f8ff; /* Light blue for folder headers */
+            background-color: #f0f8ff;
             color: #34495e;
             display: flex;
             align-items: center;
-            user-select: none; /* Prevent text selection on click */
+            user-select: none;
             transition: background-color 0.2s ease-in-out;
         }
-
         .bookmark-folder-summary:hover {
             background-color: #e8f0fe;
         }
-
         .bookmark-folder-summary h3 {
             margin: 0;
             font-size: 1.1em;
-            display: inline-block; /* Allow spacing */
-            padding-left: 5px; /* Space for the arrow */
+            display: inline-block;
+            padding-left: 5px;
         }
-
-        /* Adjust the disclosure triangle for details */
-        .bookmark-folder-details summary::-webkit-details-marker {
-            display: none;
-        }
+        .bookmark-folder-details summary::-webkit-details-marker { display: none; }
         .bookmark-folder-details summary::before {
-            content: "▶"; /* Custom right arrow */
+            content: "▶";
             display: inline-block;
             margin-right: 10px;
             transition: transform 0.2s ease-in-out;
+            font-size: 0.8em;
         }
-        .bookmark-folder-details[open] summary::before {
-            transform: rotate(90deg); /* Rotate to point down when open */
-        }
-
-
+        .bookmark-folder-details[open] summary::before { transform: rotate(90deg); }
         /* Styling for individual links */
         .bookmark-link {
-            display: flex; /* Aligns icon and text horizontally */
+            display: flex;
             align-items: center;
             padding: 8px 15px;
             text-decoration: none;
             color: #555;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-            border-bottom: 1px solid #f0f0f0; /* Separator between links */
+            border-bottom: 1px solid #f0f0f0;
         }
-
-        .bookmark-link:last-child {
-            border-bottom: none; /* No border for the last link in a folder/list */
+        .bookmark-item:hover .bookmark-link {
+             background-color: #eef5ff;
+             color: #007bff;
         }
-
-        .bookmark-link:hover {
-            background-color: #eef5ff;
-            color: #007bff;
-        }
-
+        .bookmark-link:last-child { border-bottom: none; }
         /* Favicon styling */
         .bookmark-icon {
             width: 16px;
             height: 16px;
             margin-right: 10px;
             vertical-align: middle;
-            border-radius: 3px; /* Slightly rounded corners for icons */
+            border-radius: 3px;
+            flex-shrink: 0;
         }
-
-        /* Optional: Styles for data attributes if you ever want to show them */
-        .bookmark-link::after,
-        .bookmark-folder-summary::after {
-            /* content: " (Added: " attr(data-add-date) " / Modified: " attr(data-last-modified) ")"; */
-            font-size: 0.8em;
-            color: #999;
-            margin-left: auto; /* Pushes date to the right */
-            white-space: nowrap; /* Prevents wrapping */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 150px; /* Limit width */
+        /* Controls (edit/delete buttons) styling */
+        .item-controls {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            padding-left: 10px;
         }
-
+        .bookmark-item:hover .item-controls,
+        .bookmark-folder-summary:hover .item-controls { opacity: 1; }
+        .control-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            line-height: 1;
+            color: #555;
+        }
+        .control-btn:hover { background-color: rgba(0, 0, 0, 0.1); color: #000; }
+        /* Action buttons styling */
+        .folder-actions {
+            padding: 5px 15px 10px 40px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #fdfdfd;
+        }
+        .add-btn {
+            background-color: #e8f0fe;
+            color: #34495e;
+            border: 1px solid #d0d8e0;
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+        .add-btn:hover { background-color: #dbe8fd; }
+        .main-add-button-container { text-align: center; margin-bottom: 25px; }
+        /* Drag & Drop styling */
+        .draggable-item.dragging {
+            opacity: 0.4;
+            background: #cce5ff;
+        }
+        .drop-target-item {
+            border: 2px dashed #007bff !important;
+            background-color: #eef5ff !important;
+        }
+        #root-dropzone {
+            height: 50px;
+            margin-top: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            color: #aaa;
+            border: 2px dashed transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        #root-dropzone.drop-target-root {
+            border-color: #007bff;
+            background-color: #eef5ff;
+            color: #007bff;
+        }
         /* Responsive adjustments */
         @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            .bookmark-container {
-                padding: 15px;
-                border-radius: 8px;
-            }
-            h1 {
-                font-size: 1.8em;
-                margin-bottom: 20px;
-            }
-            .bookmark-list ul {
-                padding-left: 20px;
-            }
+            body { padding: 10px; }
+            .bookmark-container { padding: 15px; border-radius: 8px; }
+            h1 { font-size: 1.8em; }
+            .bookmark-list ul { padding-left: 20px; }
+            .item-controls { opacity: 1; }
         }
     </style>
 </head>
 <body>
     <div class="bookmark-container">
         <h1>我的書籤</h1>
-
-        <ul class="bookmark-list">
-            <!-- 書籤列 Folder -->
-            <li class="bookmark-item">
-                <details class="bookmark-folder-details" open
-                         data-add-date="1747113933"
-                         data-last-modified="1686798027"
-                         data-personal-toolbar-folder="true">
-                    <summary class="bookmark-folder-summary">
-                        <h3>書籤列</h3>
-                    </summary>
-                    <ul class="bookmark-list">
-                        <li class="bookmark-item">
-                            <a href="https://www.office.com/?auth=2" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660558935">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC5klEQVQ4jZ2TS4hcRRiFT/1/1e3br5nbLaPOJCGSMAlxxk0YFF8gQVxEZxEiQchCg5KIIOrGXaA3rkRcBXFnBN1EifEBmkBcxIgQx4UaouOLzIxOaOeRftzbt+tW/eVG2gRc5dufw1mcDxgRFG6Bm0Iznw8PRk09HwoEcVBBAUUvhKsnfuOwtvFT7s3rWJgrbsxotFqEVktuO9k9sNmhD1RXIAIECUBJY/DVNfBGD8m2SSi5vro8H06idUoBh/x/C178pVTdNbYA4rtlOBgqCCtSIQQf6GxbN4gCTU3oVMuptbd2HLp5AYDGnsE+Y9yMsn1H5RAxHDgugmtrds7kcke5m44prjSTx2bf7Dz+QyX9Uh2bykYFW5LfnzCRDiHrCLFXFJyYGuneRvzF6vr0K0/elfp9qXlP+Xgudf7MZ36s/dFz/fNLf66+oPH2UXNn5crDzAAoJ1JOMRyZiNTO2eyNH7976srzOz9+lonnVrKu5VDnvipPVqP64W06Pq2PbC/uMfLrLq0ctPZKKy8Ri9biV/p/1S4BwDhljzq0pa41TMgRi3aRLyvFEun74pXdREr7ofURidLwUqsqIecuHjjyzfU/nnk5qebthwYyoIQrNAwZHBkGlHUii3o3LRXjNeKcHCAuEMTfXgmU9uUcAEw2knupM9hCqfWGU2WlFIgqcBIW/76afq+39n8+Wy+Nv1+K/COq0I2yQdmvy7fly1MXFvfO7kl7115NmlOIWMTYIccF+xpbzsVd2L7wUqGn96MLdA6HT1CBfWAG/eRDLMsOLOUXaxO2Vmr6uKh0RClmWA1dEAV4xbn7FABo9Ol5ZOrg15dkJbwDqKbLbOLjkjFbveVa6ijJPI8PbGnCat/oXF6urp0f/QAAQuvfsrXsHCwft+usk71VRNOesWmhbQAKMRgWwCAcn37txLAF0P8a2Nt//7EiKj849nTiuU4KeRQwZIhEKmwWZ/TRd0/firkjwg0W/wN2tV4jD6LHdAAAAABJRU5ErkJggg==" alt="Microsoft Office">
-                                Microsoft Office
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="http://cshr.chainsea.com.tw/Ehrsnet/Account/Index#Home" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1686798027">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACA0lEQVQ4jXWSP0iVURjGf8/5rmJODg73SuhHf1QMHMJBGppCJKQcxEkKmkIaJIJAQkIcnKQpGiIaIkIcIpokJByaHCJQr1l0Lew6NLQkovc7T4uJ6eeBs5z3Ob+X93kf2RZ5p6enUP29PSC0U/y6Mo8d82TKA3xv626qK2QLBBowDdif/4S9a+fW13ePakMetVCfjRl/KK0vd5WaTrVL3mmkbiRPmwuQlSIWAVhaqkFYVEaa2ywXEP2WwMPNsxd+JbjB8lhwGMpvdoKJW+e7Rh25jdiVNF1cX57LBWy2dtyX6Bbxo50sIN89qP7z/dCgDkySMSjRbfOpgNwKXDEahjgKXBLUjOoPfYzCNUMB+6IUpoCfkrZCS2XtTgz0AUFyrxwHDFHyRKlSTkuVcop5ZKhlWdIn1A8umGywVFm9d+BBNe18AR5OYuyMIfQbZqK5qkCzzEsrjMSalpIkWwHelCprQ/9N58AkQAwaL1bWHlu8DmJO1jPDk5Zvq6+SQvYACHKcyN3CVtr+1IQbScw69xTSIN7tm3k5c7KVJHEFmC1VyiO5gOqZrlZiLEtx3g69+3toBG8blgT9WZZ0nf6x8uXEHFTbOmeQx4CaUB+m2WIWjM3zlo21W4f1x6KcJLnToG2h8WKl/L64UZ4DpoBaIk0eS5JtHb2bacf1o2/VtP1mnvYvi7YQhbTz9NQAAAAASUVORK5CYII=" alt="eHRS(線上人資)">
-                                eHRS(線上人資)
-                            </a>
-                        </li>
-                        <!-- OPPO Folder -->
-                        <li class="bookmark-item">
-                            <details class="bookmark-folder-details"
-                                     data-add-date="1660556516"
-                                     data-last-modified="1748827151">
-                                <summary class="bookmark-folder-summary">
-                                    <h3>OPPO</h3>
-                                </summary>
-                                <ul class="bookmark-list">
-                                    <li class="bookmark-item">
-                                        <a href="https://flex.twilio.com/lion-bloodhound-6675" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1672648175">
-                                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACIElEQVQ4jYWSPWuUURSEZ8599yPJRkzEFQmkCBKCMYKFotjZiIIpgoW/RRRCIL2/wcJGEAUx2FpYqGAhfmBEFISgRRTZfLy7e2cs8q6GJODA5RSX89w5cw9Hx2bXQYzZNkkAIHbLtmyREbBX+9Dl7V8fvgAIAAoQYwBwYHN1QTJsmRHTiXzUbJ6cBCAAEbazbQNgVeE9IgmSlNQPptPFEFaazalJAOLo+CnbUvUWKpAAeJ8bADb6EdGQ9DpvayEVzSPtYDoHWP9cR+w/HNTCMCKK41HzDQJAa2xmmazdlHI3ImqyVijfNVGHnBEsSA5RlMOU5JSSkcGiNT77NPfyYkrajkhLtgRjAuRFEnWkyL3NrTtl+Xn1oJE4Oj5nQz+UyyvB+jVGWrQFMmAABGHk77nfm3/6/fEFgDqAPACElHsw2pEaK3L52MqLJCHlEs49qd+FcSwVxYPhwyfOAOhWAWcAOUgkWxlGO2IA0VJEatggibBdwpwINh7WR2bmqh3YcVAlS1sZ4NFIzSe3vHXPzssRqQCiiIhG9TuTjUZ6Nnxo+uwggkLWm2DM2erb7gVTu1Y0L3V+vrvVGp81jAuCewDo3M+MNOIiTQF4CYDFBrtXW67dj0jnJZW2BDkDYGf97e2Dkt8lBdY/feuUmwuSX7Gyqp2QDKD4DwABILD5dW2jq3nYz8kUKaXBGh+4znsB2oG8X1PZuQ70V3PW//r+6g9lmDGUIfL1ggAAAABJRU5ErkJggg==" alt="Twilio">
-                                Twilio
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://service-sg.myoppo.com/login" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660554400">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAACZElEQVQ4jV2SS0jUYRTFz73fN4//OKM1CVkZlQuhLCiSRDRESSWjRQamIKMUFGhEgebCBwlJKNqqIhEy8bGIyE0NYSAZhFa6chEJLaSHLXyg4zj+Z+b/fS1mfJ7VvXAO58L9ETrKAAAggImZSGltacVETExAbMWGZNxNRFpbZtCKmJB2NtwqElbhNSgFm4PthibSWscDRAQrCuDyifOFR059+/ezf9J/LOVY+fHcZMP98df3dzMTAJGQWmtBRSe1ZSU6XP6yptozRZLFj6W/GSlpH8qa9hkeQ9rvZpYUpp0envlqRsLEzAxC1OwqqD7o9qZ13855dpOA3os1198/P9tzp2So5Wh37SG3t7OgClGTQWxZUcOVVJp+rvnT4OLin84rdU8u3Lj0+lH/xLDTlWhzJS4tzjWPDZamZxmuJMuKMqCZSLIImCGb25t3OKP41UP/lP9evm/K1y6JIcR6NCJZMBGgmYUMBpdHZ6ebcq9FwmtZL+tHZr7UFd96nO/rmnwbCgXA8n721dHZ6WBwmYVkABCyZqQn1bPXX9EKAMK2P2GPz//0xfgbKaS/ojXV460d6YGQAAgdZUysIusHEpM/V7b9Xl0qHGoxzRAITodrpPxBqsebM9A4tzLPNqfSigEordjunFuZz+ytTzY8E9UdCYY7weker2pPNjyZvfVzK/Nsdyqt4g2xZwtmK2J67MZYZZsgAmBpnTfQGAiHhM1hqTgdvAmJpRRLRyC8nt3XsBBaXQitZvc1BMLrLLfcOxo2oGJYEQIAaADCpreRtwXfprRWMWZi6V3uHSdty+hdw3b9B8K5AZMt4jF9AAAAAElFTkSuQmCC" alt="WCSM">
-                                WCSM
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://sso.myoas.com/siam/login?service=https%3A%2F%2Fsso.myoas.com%2Fsiam%2Foauth2.0%2FcallbackAuthorize%3Foauth20_callbackUrl%3Dhttps%3A%2F%2Fgcsm-sg.oppoit.com%2Fportal%2Fapi%2Fv1%2Fsso%2Fcallback&oauth20_state=https%3A%2F%2Fgcsm-sg.oppoit.com%2Forder%2Forder-management%2Fafter-sales-order" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1722825141">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACEElVQ4jX2TPWtUQRSGnzNz792NKIok5idYpBO0FC0sUgg2V5toXBe/QItEwXZLsVA0uBhQMJpC3MYiCAEFjQh+dEpsLARFMAjBYNzs7t05x2I32U1cc5qZOTPznHnfmRE2i1vDORa3WicxD+xybN+RZ+zJL4Co58bJ4lmEY2Q6QL8ZZiKAyV7BSYLqODADSDdAAKFcuEsSFaSWQT7GzBABU0P6Euw3yjUuPJhpr7cWoISjhHJzJCWJCixVG+ZdhIYbKHPmxRGaWLDAwvJsu6D9K8H7QwRVYh/jeMn5+5c39Qhw64cSYYChmPRTSnd2TpgmPE79fwClVtPU5yTe0QwqqkMMbnvGZDFlHqFUaXC0Etra1xnX3TfKp67i5YoEBTPMOYD3eJngzL3pVe29AJ0onxgmisck04N4iVDDIg/BXtFsjHLx4ZfVgr0Aslblzuh+1BVRTSVYZFuSmHr2jkb1AOOVFXo+pDR1DOHhp3Juag6YY6Lw1GKZ5k89I/b76Ev2AK8BtxEgVCqBCmF9NvsMsYE5jEDms/aMbQQYt08exnQQyIAYbABxxwlq5HOeED6y+PXDRkBL98ToGH3JdVFrpaQ9kwXMCRjfaYbTlF7Uuk1sX9/IEdRPYVRFzQwEwTAgiX7gdJblWplLj751Gx2tOV7nLVl1N02CxXkhVzPqeSEXGQtvlih9agCdf9OOv33U4MCv79ZvAAAAAElFTkSuQmCC" alt="统一认证中心">
-                                统一认证中心
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.t-cat.com.tw/inquire/trace.aspx" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660556097">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB9UlEQVQ4jcWSTUhUYRSGn3PvndH86TYzbYpqakL7gVHMKKzFtGgTLkIJimgRChG0aSkuWgbuIwoKFy1ctJCgIGhRCSIEos1E9kcUgjSgzUjjOD/3fqfFR41he8/u8L2853n5XtjqkY2LKsIsicClU5SkCDEAhaLCd0/5RA/LIugmA33LHoQhEzKokBKhFXDUSg1QFvhqYNLzeChpFv8aaJZ0/if3ch85lTkOkSjML4DjQLoDjNlEPuMarksvWdEsMYVHS3n6L4/AyTTsaIfn03DjElw8ByZo8DoOhCGEhmdRhyteGJJxhDP1wD48nYJKFZqiEPGgUoEgtKjVOswtwIsZGDxL5kQvGU+ULnFpffMOVlbhxzKsrYMCtx/AnQlQtddLZajW4Op56EjSRo209ydUwrdZtzVbgkoNZt//G3zfLpgYg75ua2oMOCpk1bB2JGUFpbIVADQ3QdyH2HZwHQgCu4v98pIasp7r8loNr+I+/Yf22+wJH9paYOwmnO6xl8afwP3HMP8BDh8AlJeuMOVJFwXNMWqqxIcH6Iv7cOsujAzBtQvgeQ381V+wmEdRpkOXUa+bYqNIOfYCw0GdgZUiKb+dlmikUSQRSsUSnwtFJg/uZlyOsfT/Ks+xkyidYZ2kKD4ORqFg4FskwheOUthY5a2f38mjwOKHIrc8AAAAAElFTkSuQmCC" alt="黑貓貨態">
-                                黑貓貨態
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://chat-sg.oppo.com/console/home/myReception" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1672020511">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABQklEQVQ4ja1TvUrDUBT+TrAgWZIhS6cKXXQp9gVKZ9HhPkF1d9XFuc9h8wRB+gIhPoAhFEq31MEMpmCWEMhwHHrvJd42LQW/6XDO+b7zwzkEA+dBcE9MEwBjIxQysV8JMWs6qUG8IKYAwLUpaiBmYlEJkWoBSf4A4B4hK/ww8bASIrUAQFZ2AWDkeXjs99GzbZ09cBy8XF1i5HnK5UoOSM78qiLZ7Q2cTgcAMM8y9GwbA8fRYnbwpm0mfjiTC9NQZAC463YPzkFME2vPtk/B2DI9RV23Zu+L7QgkRdEqEOX5cYEo32h7XZZ/qr5/b8x0WADCpmP+lWn7OVngKVkc6iC0mNg3R1iX5VYsy/Ap7aQodsZjYt+Stx03A9PlSrce5TmKusZ0uTKrx5UQs/855UqIlImHZictiBUZzW9UOPWdfwFBHJct4iyDdQAAAABJRU5ErkJggg==" alt="智齒">
-                                智齒
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://cs.oppo-aed.tw/login#/login" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660554538">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABfklEQVQ4jZWQTUsbURSGn3NnnDqiVapZBAQNrix0UwJdFLTddetPiIXpuoj7/gAXLttF9ZcIFle12VmybCBBkkUJ+TQf5t7ThXFokmlIX7hwOfc9z3nPlfNidxuR58yQCoPSryeXn97KcPLNd+g1qqlZABQ2t7rHwMkUAEgBpAMPL6G3bh1tqxgxG0ls//Gy5gseMmXoqdK2+s9wMaDUsxiB1gxzkuRr8U4BXq0EeALXrQG7wU+2/dKYMWyXK8u1Qnmi/yJO8L01iKsvggKLpj/hbaZB0uPjyRpFK9PB5lxDMcZj6aVF3gCjeNL0jOsD9DWgblcBqAw3AajbFB33NGaYXEaqUSb8BnSABsP7dwvctwF6ukjTrQBQHQEabp2OW/1ri5HOit19cbaW21m+0drn3yDrY3HrVajdTm0Rf+LhQ4r/lkkuy9V87XKVCJBnHw5oBOHYEQ0RTmOT00iyX/b8JACAZHK9hPJHzUcWOMKnNV/KBOmP9681Hy0A/AFqCoT+5l6qcAAAAAElFTkSuQmCC" alt="oppo文字客服">
-                                oppo文字客服
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/1CtwmIZublKb_yUYqgdLByM8ffwrYhBV9z1b931KY_2w/edit?copiedFromTrash#gid=1454694516" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1678327289">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVQ4je2TwQmDUBBE334swBIsItqIAY/WkA60A8tQsBObsINYgeMhCsGD+FXw4rsuOzPsMpY0aT6KCgjxwKA3owgkCt9lAEEkUTlBtB52WUuXtXt0QufrvOa0gL3qVMyxfYib98UJ/lnSLC5b3H/ER+D3xu+RMjE30pn0MegP7A9I5QTEeSThZqRUhQAAAABJRU5ErkJggg==" alt="OPPO體驗店">
-                                OPPO體驗店
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1307372469" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555323">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVQ4je2TwQmDUBBE334swBIsItqIAY/WkA60A8tQsBObsINYgeMhCsGD+FXw4rsuOzPsMpY0aT6KCgjxwKA3owgkCt9lAEEkUTlBtB52WUuXtXt0QufrvOa0gL3qVMyxfYib98UJ/lnSLC5b3H/ER+D3xu+RMjE30pn0MegP7A9I5QTEeSThZqRUhQAAAABJRU5ErkJggg==" alt="OPPO表單(模板罐頭)">
-                                OPPO表單(模板罐頭)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/1DzbmFhv5GFf8-p5DkKlHimzvRou1LyLS/edit?gid=1640156935#gid=1640156935" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1742535349">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVQ4je2TwQmDUBBE334swBIsItqIAY/WkA60A8tQsBObsINYgeMhCsGD+FXw4rsuOzPsMpY0aT6KCgjxwKA3owgkCt9lAEEkUTlBtB52WUuXtXt0QufrvOa0gL3qVMyxfYib98UJ/lnSLC5b3H/ER+D3xu+RMjE30pn0MegP7A9I5QTEeSThZqRUhQAAAABJRU5ErkJggg==" alt="OPPO機型料件永缺表">
-                                OPPO機型料件永缺表
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/16aizSwEhaRzNbnq02eb2esDvsTtWHTgw/edit#gid=1738325245" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1661151557">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVQ4je2TwQmDUBBE334swBIsItqIAY/WkA60A8tQsBObsINYgeMhCsGD+FXw4rsuOzPsMpY0aT6KCgjxwKA3owgkCt9lAEEkUTlBtB52WUuXtXt0QufrvOa0gL3qVMyxfYib98UJ/lnSLC5b3H/ER+D3xu+RMjE30pn0MegP7A9I5QTEeSThZqRUhQAAAABJRU5ErkJggg==" alt="OPPO操作罐頭">
-                                OPPO操作罐頭
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/1ihphqb5kwbZ5VGPhvh5mdLl_OOp6OR1Z/edit#gid=948748319" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1661151587">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVQ4je2TwQmDUBBE334swBIsItqIAY/WkA60A8tQsBObsINYgeMhCsGD+FXw4rsuOzPsMpY0aT6KCgjxwKA3owgkCt9lAEEkUTlBtB52WUuXtXt0QufrvOa0gL3qVMyxfYib98UJ/lnSLC5b3H/ER+D3xu+RMjE30pn0MegP7A9I5QTEeSThZqRUhQAAAABJRU5ErkJggg==" alt="OPPO手機分析表">
-                                OPPO手機分析表
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://airtable.com/appo0Lgi88CH67Fko/tbldP4APTKOM2lWmx/viwb3JTf6h9erucdE?blocks=hide" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1702359163">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACw0lEQVQ4jX2TT2xUVRTGf+fc+97MlE6JU2oDIkYpMLHaaMToDjBhi0uiW7VUo5gYQ+yOhcaKaxWDidLQvRtZGVYYE7VBEGr9vxDTDrUWbGc6896997gY0khiPMuT8335kvP9BEDfHpjU3L1k0ZqYZAimqIgIAGZGIhmGIFaKk4VUxPfTVOe06PTgManIaRIQ+0KAMnQh9gDAVch8FaBv5BAUrGeTzh2uzIrKsAWLXr0rQ5cUN2z3cFMO3H+I5shDFBZYWbtuCRPvckkxBVUVSewVd6peAF5ECaHDvfVdMn3wLe4eGOHKn9fAYGJknKVOixMXplhsL5r3NcwSQPCCZACp7LFj8B5mj8zwyZUZzl09R1G0AcjzQZ5/5Dlmj8xw9NNnZKWzivoMIBN3qp4ElVCs29mnz8rF37/kzBfv4YaG8KqAEC0Sbv7Nq4depzm8jxc/O2ZZpS6JZCqIhLJDc3RCRreMcubyx2RbhxCBaIloEQC/tc4H337E2F0PsLOxW8rQRRBRRSGW7B99lIWVH6DsIKL8e8wMFaXo3uKnv37hie37IfRQlM3LkAJOHHD799gdJoiAQSSRaba51kQCl/NN6xJ7GmOQD5AsIreN+lohpYhWtrCvsYevlubA5SQSapj5rMbPy/O2urHK8ccmCbfWwMCJ9lMZhLU1Xnv8FVrtG/y6/L1lWQ3DzLnD1ZOCgCX5emmO6QNvYrnj0tIcZW+dGLp4l/Hyk8d59sGjvHB+kvWyI6qun+2OIpVtdtZ3ybtPTTNca/Dd8jVEhImRcf5Yb3Hiwhu02ovms4HNIol/p75AJntTmaJX74tyA6y0sW3j8vC2cQzj8o2r/LYyb7iK5L5KSCFopo7SfvwfmDYgFpsw5b6K/RdM9nkxJwd9S53eh1nDDGdi5jUXn9VwvoqqJ5HMzASxICrz1osn01T7w38ApkVQhlHH6AEAAAAASUnskjggg==" alt="Airtable(佈達資訊)">
-                                Airtable(佈達資訊)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555176">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABlElEQVQ4jYWTPUsjQRzGfzPmzOpJsoKVHJjmvEq8aAjYufjSHCqpDzk4AsoVwdxHUAsLNRLESgsRbJNahESxkBhh/QarhZA0l+4CyoyFp+5OzGWanXle/vs8DCMw1odfK1+VJAdM+uCyVGQf9nZcUy/eMZcA2xQCDalwzCHSf1CCQhszgP2PDyboWtv4A7qd6XlpDfX6S2TncXen7EvQwQwgBOq6+i4V8h+2Z6fJJBNv5PrG6/5jfz+R0ThAif1DD2T2Pr1YDAzIJBPkK1V+n5zyY3TE6Nrlq0QMVGFw/ygVGHBTq5NJJrCtMKvnFx2bgcoFbmHq6JjV8wvmh4eppn9iW9b//ZpYYMDCl8/kK1XylStsK8xQNNoxQ6DC1sw0B3PfADi7veOmVnvlrL5Iq1vgBQYMbOba/qm7t5eQ1cND868PlVkJotEpplTq+ftyEwIPIVP36cWiMMWf0suTWlMy8chYgujYuHM5ES/78ZApHPi+5IbDwgNiBuU1m7rlNUoTcJ14Q2mdAvxiV2mdcp14S90nPTZ2yJf7z7oAAAAASUVORK5CYII=" alt="OPPO佈達onedrive(oppo@54386488)">
-                                OPPO佈達onedrive(oppo@54386488)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1688350756">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACt0lEQVQ4jZ1TTWhUVxT+zjn33TczeTNm8rMwMgzUhVWKjotutAGlVhRKKW0tgnEhrtwKapGALy76Q7sRXNlNq4tKbAvRnSB1U6EtSKWlUGml2FaCzSKZZJz33n33HhdJNNCsPMtzvj84fMD/h9bZAQB0nZtZh6zbvjjwei93h0PmCACqFdaLAw+u0sTDW6uY9dwIALZNv9lKotov891uwy32sQCLt+vzuDR0t/u467dvPIKHK2AFAH5GT5eVqxSfJ+HGANuszHyRZEVx1vyeifGN4SqmCNAVLJ4LpGCkCJ1v3tktRibKXuFja2KXNOyJxiO7Oe5WskV4I5jQGeymFEHTZe7zBAqKAn8EQAAEFdGkWZs9PvTPLASBgEAEKQM+Vl2bYMV959fvHeVYxn1elgDIVIW7Uj81utifQg1MBHIZSmPxmp/B0dUUBIBemt7XGOLBe0TUCoX3bCWC6s8//frKq/oopfIgfmRGp8zhTAQB8Dc77MD76DIAbfLwSYltOxQ+ACwkjCA4gzQt6RKcIXwAYSggrkDgGG0YnCRAafv0W1ti0TvqaRAheK6aqCzC1buHZo4gnTKHAFxLzwX9dsMVVJYOF304wyowmOegu6j14Q/j7JLvgnNEBLAQtSut+5YbCx5BDBQ9smFz8aB+4bd3twTnVQmIhdXY/l7p3vr837gz0CHauDVbin2TRrlZTUYCsIlBYwEyVlW36Y9oZGRwto/OX7cDuzFxc3q9cePepwyQ53huEujlFet5NFHvyr7z+ZPSu34Zil6ZF1nZzJ+4L18+5v8barHhhTyv6yRAKoDy0veDj+NdZ6L26PCexFqGWJEoZo4sc2SZogrHTDJXq3FUadP4n5c/q9++/5Vi+Y0AlADS/Z+4N5yGJhSeeW1PPEIQBRWSczJ/5zTdVIBoTaleeJ4CD2IkSqxcdJIAAAAASUVORK5CYII=" alt="OPPO佈達(原Onedrive內容)">
-                                OPPO佈達(原Onedrive內容)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://84459043.sharepoint.com/sites/OPPO-" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1661908283">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABlElEQVQ4jYWTPUsjQRzGfzPmzOpJsoKVHJjmvEq8aAjYufjSHCqpDzk4AsoVwdxHUAsLNRLESgsRbJNahESxkBhh/QarhZA0l+4CyoyFp+5OzGWanXle/vs8DCMw1odfK1+VJAdM+uCyVGQf9nZcUy/eMZcA2xQCDalwzCHSf1CCQhszgP2PDyboWtv4A7qd6XlpDfX6S2TncXen7EvQwQwgBOq6+i4V8h+2Z6fJJBNv5PrG6/5jfz+R0ThAif1DD2T2Pr1YDAzIJBPkK1V+n5zyY3TE6Nrlq0QMVGFw/ygVGHBTq5NJJrCtMKvnFx2bgcoFbmHq6JjV8wvmh4eppn9iW9b//ZpYYMDCl8/kK1XylStsK8xQNNoxQ6DC1sw0B3PfADi7veOmVnvlrL5Iq1vgBQYMbOba/qm7t5eQ1cND868PlVkJotEpplTq+ftyEwIPIVP36cWiMMWf0suTWlMy8chYgujYuHM5ES/78ZApHPi+5IbDwgNiBuU1m7rlNUoTcJ14Q2mdAvxiV2mdcp14S90nPTZ2yJf7z7oAAAAASUVORK5CYII=" alt="OPPO後拋案件 - 首頁">
-                                OPPO後拋案件 - 首頁
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://app.oppo-aed.tw/admin" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1700199686">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACdklEQVQ4jXWTzUtUURTAf/e960wzNpPTjNqXRZkWIxSU1iJaVRBB0BctClq0qUUthEhaREKLIjAosL+gNKRd0k5aFQUZFC1KQdOC0klNnZn3Zt6757ZQ7GPswuUu7jk/fveccxXPOzVe+QzKvQbSDNYBBaiFo3IJlmGwt6jN9SwkW7qwYWaVjrEulsQ3IV+9nwRiWIbiANtQdDGRURqRDoTMgdpGrjcdIJuow5eQ/omP3Bwa4Js//z+TNNChCU3zluoM97JHaUnWI1YAxcWNewhMSPuHfkRkWQLQpAmNuyuxlun8LE8mv1A2Ia5SJCMxtkZrqKuK892bA7WshqsRwQvLaMclFY2TWlGNg6IQlJgWnyAMYMmgEqIReJUbZXbLPg43ZJcuymK4+u4pU8V5FJCOrmQ2KBKI/GXjcmLvDS8sqRe5UQIxGCsMzecYyf/g8dhbvhamOdmwk+7WU6Sq4gxOjROaECxgLYqHlxeqZi1KKWJuBGOFqKtJ6ChnN7dxvGEHvZ/fcGR9C5/mJul8/4yZUhGUwsEIGAGxWCMUyz6loESVVXRkD3JozTYuve7j/ocBLrzsZe2KJA/aTrMpngJjcBChYhthe6KO/XWNtL/uY3BiBFCMzeVof9XH5uo0u1MbwBg0ZpkeW8u0l2fGL5ArzC6CLQA/vTwzfp7JwhwYQSPWAPpvwIJJ1NU0JeupicRRiy2M6wgxHQFrwYjRGDsENvuPAvmSh1/2udN6DPPHJDpK4VjFTHEejB1WdJ8/B9xdnO3fgRbSShN1XOw/LwzEMGWDKaPUFU1uYw+rx0HJNSzNi78NAXLiQUU6Agzj6NtEqx79AvOhK7u7RHq0AAAAAElFTkSuQmCC" alt="OPPO Life">
-                                OPPO Life
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://oppo.cyberbiz.co/user/sign_in" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1721642422">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACwUlEQVQ4jaVTTWhdZRA9Z77vvpv3kjQt1kZS8uKiEFzU+kMxRUEj8nShVOiiO9FSTFapdlE3CgUXFl2Y7KzYnSvxd1FQUZIguBChi0KComit1FaLr01e8n7u/ea4eKaNaw/Mapgzc85MEH0QgAAAB+YfMeNxUdOQjwEgaFcoLjl4DhfmlrfXEFsYe7GG0f1njJoFLYMXACT0mUnLAKFw6j20/z6FldOtLRbD2OkB7Nn1ScyrDZQtTy6HYCTZ7yMBcECGOGyeOov4rXMY119pGQDH6M43WKk2yrVmt1zrgoUHFE4VCd4u4KUoMnjK4N12F1abxnj+Vl/CvfMPhcy+Se02D9yzx948+RgnJ3ahdEcgub7Zw9GTn2r1xx5O3fclnqt/r4eX5/xmGmJM7elohhkXszwP5UdvP0t34f3zK6jkkUZoo1PixkaXCNSNXhWXN0coEaQFD5VZhgfmf0ndcmJ875AufTHDZ2Y+0PkPLxp21gRPfZN3VGWR9M6g4BHIN2SW6Ah/mOBjkAMCe0VCjJFxdFjVO2vMdw8h3z2ELBO9V9WJyc/xbeN1jsQ23YmA8i7DtqVuQbdCEIBg9p/cdkTCroA2IUJZZuZl8nRtzVJvUEj/SmCQjTgXfnhKC6tPa0tCQrwa5Vhknr/w51+t9NOvTS681uCjU3erkgcKUAwBv19r8sy5VR3f9zWO7L2Io9897+sajqZiydxx1qii23Ucefkzrfx8HYcf34fGoQk1pup88lCdTxysyyxgJLYxXrspUpA8Weq90x/x/vkFZrU5tZpd9DxDJRC3jxhIDgxEAJkgFagM5kgbZ3HhpdkAwGBTyxiIB2NteNIqLgW6xUDGQGYBrASBcqOTlcFM3l7E5e4xbH5VBADC+lIBq3/s1Tt2APYgLcsg523nabSKAbF0lO+i0zyGS6/eeqb/9c7/AKMTWbMyJhGXAAAAAElFTkSuQmCC" alt="CYBERBIZ後台管理">
-                                CYBERBIZ後台管理
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.oppo.com/tw/" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555808">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABtklEQVQ4jaWTvYsTURTFf/e+mSQKogtGSGObNCLZRW1EtrJQLAUbA7tN/NzeQgha2K+KVhvYSthaC6sQbER2Uwiy+QtWiKAiaLIz867FzMYZ3CnEU13e/eC+c86FIpTrOMqQ5jT/JIVm8PO401qgFtYBmEYTNne/FvJZnB8At88s4cIbqF0ioQkczzLfcYzxMiSJXvHi43ZxgyVCLraf4LnH0bBKYjCNpyCTtMzq1IIaTuBnNEN5xrvRA7aJBFDut/tUgw5RAmZv8GywP/vA3rcvADROnKRSPYeyisgVQgezeJOnoxXhztkuleAl3jzwmPWdXimJAGuLPeAhKsp+fEtxroviMRvOm1O28/zIXJ31nR5mQxSPc13FWxNEiJO3gLBMwBYJYLkBxhYJywRAViuCt6byn1BUxmBG4C4DxoC49AsDYiCrNUNl7Dh/ShC9BpzmQkN5vzfgU2H9FAdva4s9RDogik8epZMb7T6V4CZRAp7XmPUPl1FWEK7OZfw8Wi030q94imRGMqtzpNxIf5C3sqeFcSxj4AfKbrmVDwjNH8vd1gJRdkxhNOH54cf0tyr/eM6/AU69tMqtrcgKAAAAAElFTkSuQmCC" alt="OPPO官網">
-                                OPPO官網
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://estore.oppo-aed.tw/?utm_campaign=estore&utm_medium=button&utm_source=officialweb" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555839">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB5UlEQVQ4jaWTv0uVcRTGP+d83/vajSyodLhG1+VCNGjptZCgVQKnoJa6UEsh4dDk0OLS4BQUJU4Ft801qP4CuZqIDi0u94b90mow0Xx9v9/TcLX0ikn4jOc5z+H8eA7shDKMshfq3A5edpDDBACunT3CicMFnBwHwNsPvq/OM/5+pTFXthUy7l7o1EgGQK6IcNpiVycTjxkfwF6H1EYZm5zd0rht4kGNXZls5pIEO2CbqmY2S7AawZBI82QzRTFu2PncCtMfK4DUOxjouSlxpixm2IZ/ZcYjZj9NMLGwBkDvqSyduV4R7kvG9ZsIlmyUGJ16KdzpPilR9E6aojxJ+iI8rdzec4mA3rv3nDi6ZetnzdK0qETaJ07zlvilsLw2VF8ibpdyMxaW14Ys8UviNE+kfapBChI7Q2WG8twiAOP4XQW2YuW5RVRmJHamQQrbb2r/ar0Bf3I1qM1b4oVgXZQ6WvcbgVJHK8G6LPES1OaVNLw1H2oSuxZtzo7sN4IezY5I7FrMhxoibxzTn1cp5r6helVEztGdK1Js+0pGvrCwnMLmGfvPXJaetscSuesGmPeDPJuqSIORHnIoapb1FEtD1VSqABKsXSJtt6YIfqU/Q+IfMDb55K+RDmDlAz9TI/77nX8DZr3nsXb0FfsAAAAASUVORK5CYII=" alt="OPPO網路商店">
-                                OPPO網路商店
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.oppo.com/en/choose-site/" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555927">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABtklEQVQ4jaWTvYsTURTFf/e+mSQKogtGSGObNCLZRW1EtrJQLAUbA7tN/NzeQgha2K+KVhvYSthaC6sQbER2Uwiy+QtWiKAiaLIz867FzMYZ3CnEU13e/eC+c86FIpTrOMqQ5jT/JIVm8PO401qgFtYBmEYTNne/FvJZnB8At88s4cIbqF0ioQkczzLfcYzxMiSJXvHi43ZxgyVCLraf4LnH0bBKYjCNpyCTtMzq1IIaTuBnNEN5xrvRA7aJBFDut/tUgw5RAmZv8GywP/vA3rcvADROnKRSPYeyisgVQgezeJOnoxXhztkuleAl3jzwmPWdXimJAGuLPeAhKsp+fEtxroviMRvOm1O28/zIXJ31nR5mQxSPc13FWxNEiJO3gLBMwBYJYLkBxhYJywRAViuCt6byn1BUxmBG4C4DxoC49AsDYiCrNUNl7Dh/ShC9BpzmQkN5vzfgU2H9FAdva4s9RDogik8epZMb7T6V4CZRAp7XmPUPl1FWEK7OZfw8Wi030q94imRGMqtzpNxIf5C3sqeFcSxj4AfKbrmVDwjNH8vd1gJRdkxhNOH54cf0tyr/eM6/AU69tMqtrcgKAAAAAElFTkSuQmCC" alt="OPPO官網(全球)">
-                                OPPO官網(全球)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://brand.heytap.com/cn/business.html" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1748827115">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAClUlEQVQ4jVWTT2tdVRTFf+ucc897fU2CjbGI1cYWpFpoq0WHtiqE4KQDxQ4cOBDBr1BwLHTuqA4cOZN8AkEQiyAo4qjWFEOKimaQkpi8P/fdc5aD99LWPdubxV6btdYWwHvffHgOxU9L8esSJzDJGDErA0IgOpsHMeo7XD756q0v7urdbz9+ga583Qya1fawJRAIEtVmugIQ9NiMSj6emQ6n26S4lujKzTRoVtuDto0KaVTHGpeWfsz0Yg+AURkzKS392KMfem4P2q5ZyKvdcHoznv/g8mfufEwQR2USXnnyAm8/+6Yk6c/Dv+VqvbpyUeun3lDF/DX8J6SQgjsbsxKA5eqqEALjMvalEy/p+tlrXF6+yLR2dO547amXuX72GheeeFGjMnEIgeoqYDkBUUi2HQgalRFdLRx2h0zKBEnstf/S1cKkTghI2BYSEOdqC1kyIAVSiDw9OMml5fNI4mR/hRQiUREwsgTGmHRkFQELFAgArD1zhbVTVx75CA8XOGDq7IQEj2MeWbd1cJ+t/fsAnFk8zZml03NOPcwHQJqFBFQtEMUF2/yw8zOf3/0S23x07n2eX3wOexYuV+uINB3tszBIdc7ThMQg9qk2UeH/3Jq1QgSgGBsJY0cCYS5ktSku8yQGmpCo2JpjgZKA3aCwUmvVIPb14+4vHt4Z6d7+Fjk2mIbvd37iwWSPO/v3PIjHVGp1ULDt3YS4HQfpnelB2+bYpO2DP/Tb3u/OIZNjMxd0m1/3NunFTC/mWl27dLzJ3XB6O5DijW443c4LOVccshotNYvqhSzbsq2srKVmUVlZlRryQs7d7JluhI2rtzaD6noZdxugHYtpdXWlWmCBK9XV1ZpanoJ0y7jaC6vrG1Vub/wHY91x5zQ1CGAAAAABJRU5ErkJggg==" alt="HeyTap官網">
-                                HeyTap官網
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://zh-tw.facebook.com/OPPOTaiwan/" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660556042">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABe0lEQVQ4jY2TvUoDURCFv7kEs9FmEXvjE2irVYKFjaAPoGghJoJgeosoqKUknX9FbO00D6D4Al6ttDKirbAiZJOIjsXmdzdKDizMHuac+bn3CiE4WU2JsqjKApAEELAqWITd2pFUuvOlFbg5df0qeYFc2LQbCoVEg12vJF7bwM2pW69yrTD1n7irqo03SHsl8QyAXyXfT7w5C48H4B8H38VGu4spf4g8gDhZTfLDc1i8NA2nq73c7RPMHXYRhnSMH3b6tbk804mvLJQtfPihUb5ZjClMSkQO46OdOHMOXjWao8KCkQEW10/cRNKEmZOVYGHjYx2utcTt+aiDASpRuj8eXnv/FWxMlUsRtlpk+R5e3oMjdIcDbq/cNHjrNRDBirOmKQzX4WqP+50xEpk/WjJMmNqZ3KhSHHSMdnWlWDuSigGof7GjYAcWg42PBPcnOIWSePUG6UE6EaUYHybtFYLHFIGT1aSzrqX3T73TJpx1fU5ktOCsaSqc/wus3Yx1Cv0t/gAAAABJRU5ErkJggg==" alt="OPPO官方粉專">
-                                OPPO官方粉專
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://insurance.senyoung.com.tw/default.aspx" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555049">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADY0lEQVQ4jV3R60+WdRwG8Ov63QfgfvDhEQU5GGXgADGz7CgdBrbZYtOyjWW2Ri+qd01apxlOyTdlW9jY2swM2zoYrc3ZShRJ2KDszMhCgymjBxAwbwY+5/v3+/airVHXH/DZtetiIqX3JQNdRogGCAAQEbq2FfesuUnEps8yUtOD/0VEFEljd5y82HLwsyG4IRdGGwCAUhZybBsFnsJdNxde82Px7oiXeePjH8Kp4hCWfTiK70kuCEA2tw8Ebe9+J8jNAowBMsL9z9fGb1oVmR44d6Wsq3/CjQcuDjStSGwq7Jd0JuGqks2jk96travyeVRlOZZFz7HtkKvoOcrJ86z1FflXHwwf37LvscjDZzoe6XzqFj9Yeqk+WxU2e07OLuUOPlC1cvLTD36blS1KABEDES0UDRgDiSW1QtyZYV5lifFx9L/Q0Gvf9tAC02MlJjNWzqT20xxsccut2WdtAgQBKBoYCEkFk9G4o1Sfuyw7K//qeSUdPW7oEen5RuGyO03Q97ij3aixrv5eZS9alQBggkCs0PJs+Lcfqx59+X7jt4GhjElNk1mz7TQXjkgmIYGbW2hjecXFfwGCII0y4hpe6CxC7GBROjUU0IFKjYDheUGvfz2+mVqJF8sHHG7cg5FM6WF70bMQKKEEjIy3CMp8k56xrUxUw4sU43M+iu1flUvtWlvvevKlqWikYc9aMI/+B4AouHYakVAh4r/6KhMYhGsETvVlHni7RkJLlpgN9653ZiJrProuzMNnROxFAEEapFIWrtxzDGtX7KDn/4ypZJ4889YOMzHmq4EjdX5J0eqzKuX3iohqBYwt/3QHhBAQUAF6howMh5qCvt4bra9H6lm59E+e2vp6UBGbLjg/19ZdXZp/QkTUXtLYShHKIpVFEQ3CcaSz6yeuq6h1wl4SHfXtpuGGYabmwFj3e1LRuG33oW/lNMlhEaGdSGaMmU+JEQBaBFrU/tfqFrbeV/oOpiaexhfDBf55pIWwVOJa2j39XMET27p2n+qUptbW1sBet7rY2lRXBTfHQaA1stwcFERy58jQqz+OyaUNd79/KPzHSVdlOxDCYjIJZ25we3Pt5jc3Nu79hVr0zsCgxAY0ADEKWYT0WbC+JKmj89IUDqEonYIBAOXAyqWOOpb1Ccngb7JPnIbjx3K8AAAAAElFTkSuQmCC" alt="神揚保代(帳/密54386488)">
-                                神揚保代(帳/密54386488)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="http://warranty-query.newboomgroup.tw:8012/manager/login" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660554662">
-                                <img src="" alt="產品保固" class="bookmark-icon">
-                                產品保固
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555128">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADR0lEQVQ4jU2Ty29UZRiHf+/7fadnbmd6tS0tQkNsxVTEG4FAK14ikhDjRuNlYSSphD8BEzckLgyJ+4YNexNdKNFATIhpqbeJ2qA1UiwCnXY6pXOfM+fM953vdaExPPtn9eQhABARIiIBgLt/Ls4G+exp2y7P1GvlXURA0DeyCa9/0Vp3aWzf4YUHHcJ/7IjkmyvXPooaW2cXrq14V775A77yIYkAlOC9uaMY3zNs8kPj85mp2Q8HiRoAQCIgQLKrP3/5mYsaJ4JAue9/KLm33r/MT+5W1GhatOKsfH3lDZf2weI0q0zf1fzBQ68PYailzp8H3nnt0CfKtt6u1cPup5+v8vKvZVVdb+CFGWBwgFBvpanWiNW9zVAm9mSMJjcVV6vB4OjkV1Qs/nK0fPO3bxPTJT+laW7uC16+uS05ytP0pEWSEH7/i9FAVV49PkUXLrzsqtWOpNJp2b3/iePcKP59xmNo5yA9nqK9Dw/K5HCKjjwL6B6CdYSnpwkP6RyNjgYCAUEgCk7vFO+c4cR0j5nECjGYSMg5UNq3GB5y0JoQBMDsYYeBXotm0xKREDOxtUZMFB7TNo5GrTEkAjjnJIwMgRieIog4MAFb2wSlGbV6jCRJRCQhmxBJFI5qEIGZARCsFVRrMZiA2CRgJtyvAH29QNhhVHZCdLsCpTQAAQRgxarERKKYpN2KqLLdgROFIEtotoCBXmBkUDA5Qdguh6jVOqQVhAnieX6JSfF1T3uktXL3d2JpNiNJ+YzvCoSxEaAdEhZ/Am6tKTTrsWyW2uL1aKeVR8rzrnOqd+BibIxN+0y3b9ekawytl5TcXWfcWutCcYyNEoOVEuMSWl2tSMpjMtbafF//RX7kwCtL4NR8rjdQhcKGbbuu60aGEhfK86eOyMzJ58QlXWm1Y4rFuB+XitbPpJVOZ+bHH3tpSQtAW9OPn6usrUyxnz2x/9Fxp4VsJqf43TcnKAh6cOPGHSmuh8m4Yk7l8z2b5c7VZ1586gMA9P9MG4VCponyxyZqnPW051kbo9MOIQBy2QxY+zDWmlSubz4zfODc2NhYCACEf4MQAQIAa8uXZ6tbxdOkUjPE3i4AEGc2JYkW+0f2Xtp38OTCg84/N5+miIXbJbAAAAAASUVORK5CYII=" alt="財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)">
-                                財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/16rPtb3sIXBZ92mK5Xdnskc39Cd9fUJe8a60i9nWhcZ8/edit#gid=0" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1717584831">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVQ4je2TwQmDUBBE334swBIsItqIAY/WkA60A8tQsBObsINYgeMhCsGD+FXw4rsuOzPsMpY0aT6KCgjxwKA3owgkCt9lAEEkUTlBtB52WUuXtXt0QufrvOa0gL3qVMyxfYib98UJ/lnSLC5b3H/ER+D3xu+RMjE30pn0MegP7A9I5QTEeSThZqRUhQAAAABJRU5ErkJggg==" alt="三大電信 - Google 試算表">
-                                三大電信 - Google 試算表
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.taiwanmobile.com/csonline/service/ann/ann3_20160407_143146.html" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1680687650">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC3klEQVQ4jXWTPUxTURTH/+fe18dr+xQUotjWmIjGxI+IVhMSBjVpXRwkauLi5ODCbFI/ZnEwccE46KKTkzEmaqQ4qDF+IIIa8QOLgkVAoC30tbR9797jIFQgeqZ7k//553dOzp+wrApvWkOCZFwQxRiI1Yx9FQC6AHRDiiQd/PFzsZ4Wf9znzeeMmal2lsaE9tVU2PTbxvioYM+dhadNaLWW7EAntU1eWOgRC49y//4ElQqHwbyOPLdZ5mb84smnRnVneg0ypQCUagZjHZfdNn4QSSwhKL/dd4YZF2rGUlPQusjfZl3OlJqgAH7r/RFGZIr2WD5IBKihrgEaZ+nQaAdx1/qQNv2PtRGck4PfFKedZvC8/SKDBV7aavZjU0jmB0/53dSefQJKx0XBici+QYeTM4wynOWLrZaGo3ssTl05XigO7Y14pi8uwBznXH4YrAwu8i5+7xkY1r3QVQ4AYHatXjUdMrRTu6tSsuTYx5Fh0hw3eMbZCK23AOiZ34rF0zqKjB6nsMgzDOhs/Qp4ZnQxjHLVlrFPIxmxnPIvLkF9XMlOf5Dh+f4pSZOAQbX2EGfzqwE9D4sSl4MftLNqN5gay9PjKE4VOBip7TXrA9sAWADg+IzP17Y1DQkQJaluxQaQ9Ngz+1Qm5On86iiYqkfGmskZyUVzHyY8b87tq5hldWXH5g0VKZICUiRfWS3pE9sv2YnoIXLhs/83leuRfd06RqcbW4N5IdOKVZIA4OSLhwkN7riZez5luW7x+t2n7tGB700AkH03DlYar9cfSF1rOe+riJrAyJdfDQCfGXjWdrGKefLFw0RXYeBI2s3uBYCNufz727e6w7qnhMutHaOTdngHAMwVKj2T6eztgWdtF7E8TC2Pb557WRxqN7Wc8CtZqSuZduA+iwDCszbVmyYF1+Ymip2v7h2shmmJAQDsvHE1TFLEGBwDEBt+9E5oV3Uxc7dSZrJ4q3NJnH8D25hvnnUEkr0AAAAASUVORK5CYII=" alt="台灣大哥大支援VoLTE/VoWifi機款說明">
-                                台灣大哥大支援VoLTE/VoWifi機款說明
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.fetnet.net/content/cbu/tw/help-center/detail.html?uuid=cab05b57-d6c7-42a7-a198-2571f60b4133&tagId=cbu:faq/charges/postpaid/VoLTEVoWiFi" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1680687707">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACdUlEQVQ4jXWTwW+UVRTFf/d975t0BtuCFlPSEtBAqBC3dBSJIXEhJkAXNCHBhWxgQSAE0AV/AwvYGVlCXBiNK5dGQ8SYyL+AaUuVaUo6lplp+8303eNi5htZwM07uYt37j335Z2LpGOSGpLSAK7XhLv7S7yGpGMmaRWYABwwQJICrwgrOWYCAvDcJGlYLPUvJQNQ2XHYwfo5JVmWCQhxqOiOmUnuVvIlgRnyBBbo/vkH2cSE8oMz5imZhTAY1QyyDEIwyzKGiLGf8wohRlhb1b/nzlj3t59FlgEiSrLtlQbFr7+ABIhgASH6p/8QRxRZsPWZw7w49YlN/fgTlY9PWjQz9Oxv0g/fE/MIgq2iwEIgjzlmsN3bpkAUec5WdYz89Dw2UsPMMHfXdkosPl2k1WojifeOHKHdbvPsn2WKbpep6WliFlleesob1SqdjU327d/Pm+PjRDPj94cPuXrpIp9+dhIz4/K169y4chn1YPfkO8zPn6XwNg++vU+z0WB0bJybt26xa7ZOBGh1WuyemuKDj47TbK5R3VGj0yn4/Mock+9HOp3HnDh8gaP1D/ni/Fnu3X/A6NgY7k6URCXmbLResLSwQGdzg26vSyWvUGRNtkYSO9hDHqosry7RXFtDqP/FQDQzFb0eo7ve4uqXXw09sN5Z59F3T3j38Qyz9UNUDtQQrl7RMwPZwFQRYLZet8nJPaSU5ClZFiO379xlceEvNrc22fl2DUlM791rd77+RiPVmg0mUGnl/503cHCp8JrQACEAzwHc3c2MEu5OSomUEu5eFvpAcLhMAZgDVkIIJQFJmBkhBEIIlNNIMutvIsAKMPcfUXllj9WF2q8AAAAAElFTkSuQmCC" alt="遠傳支援VoLTE/VoWifi機款說明">
-                                遠傳支援VoLTE/VoWifi機款說明
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.cht.com.tw/home/consumer/mobservice/basic/744" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1680687726">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADWUlEQVQ4jU2TX0iddRzGn+/v977veY8e/+COzdE0Q0e6GtQSaTVjGJMx2kZJ0UU3BkEXNYhuIqMRbKMb101RizaioLUt6c9GwS5qQzxhm9kyMFP3p9S56dlRzzl63j+/39OFjXruPzfP53kE/wsb4WMs3/5y/2TP1HyhoxTF9wCQqqQ3/VBDVebA7sbjeDw1KD9hFaAAwv/ojUeS7Yd/6Dv8/URxtmAZWbIUxYyMZeZKjr1n/uTbZ8fCrncHjuLho1V3MAEg2HMmeeqtrZ/n6e5rSIGdLWmrRCQ2VpRSuHg1i7Ojc8Z3ta6prJY63/x4sP/X7tF3nsxp7oDj7X/z0O9Z27OzqTzq2JTWJJSIiFIiIpD5QohL13JaIMwXV6O5QDdv3lBWe6F17Jzs/XCobUtdamDLxmrvma0bYCyVqxUzU1lkJhYk4SpElogtCFAiQ6uUorXAbzPLu5ynHqh96UbB+NUJbZSItgICkP7haRw5eRlIJQASsJREhc83drdIQoPWc3RXS/oV54+bhQ4qh/fWlgkAWkuhAElPw015UCkPsSFIIjZGvh6ZwROb10vCi3l7yW5TtRV+faUnshIaISkAISIohQZRMUJQjGCCGJaAscDI9RyNpaSTrqxLeWnHkmJJFEMDElAiAInn2uvRlE6hoszFd6M3cGLwGpTvwpZinJ+Yx/PtDSAJZ2klmhatmwYns3ysaZ0oCKy1aGusQVtjDQBgJYxx4sIVyJp4WQ2MLYYGQWyzalNdaiCdSghIfjk8w9BYKiUw1qIUxoiNRTEwgAgAEBAGkWFluY/m2vIhdTIz/dFisRSEFjI+l+fcUknCmCQB11FwtIKjBOCaHZBsvbsKYWj41aXZ94Q74Bx6bayvqPz9CAphvhQ7BNXN5YALywEcR+P6QhETc8uiHWU9kbh7e6t3f4367PWpV19cm/LeY6nTB3pO3Y69XYu5RZZ52n5x8W81+Mss4GmBVoSrLJYD6Xj0PtXbWZ954ZOf98327VnQAIDxb8PTuW3flFiqXl+ZfNBNJNzJW3n5K7ci2vdILeI4nup+pIFl2nza+/FQT/74s1ncaebfU5HNSGD4Vuexy4We989PbR+5mrtLXCU0dj5dkRwaP7jzg5qn/QE5h+KdO/8DXHy0AOLhUC4AAAAAElFTkSuQmCC" alt="中華電信支援VoLTE/VoWifi機款說明">
-                                中華電信支援VoLTE/VoWifi機款說明
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.tstartel.com/CWS/vas_VolteMobile.php" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1680687746">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADSUlEQVQ4jUWST0wcdRTHv+/Nb4b9xy5TQajBksY/qYbGxMZYYrxshQPxVj3owZ7xhA0eetuDSaNtxMSkHkxs4sF4qCYe1MRWmhBLqRAisbRVpNWy0ELZnYHdnZmdmd/veQDxe3in7zefl/e+hD2JgIggwdWX++lArsw2lyVuj3Zs/gMY8yOAn9EKp+hkvSoAESAAwAAgFTARRF8bHMsmD6adWvWCE9ZOcbMpErQNTPSO+M0LiNrTcskdI0CkspulffJiecLxN85acV3BUIJaUMdywzZ/auConfCA7YLEgZVJkS+codHV83ubAMFieTybkUmp3vVoOyRZbRnxoyJrUfK7gYmR0pPWDh11GN1KqC/rIm6cpuFwkuSbzEDafXiBLHuHb9/L0kbgSiyOKIYkIljSEA3iFCAHsTzDdXl+MGqsvF0Mr428qJB3h1VUd2Xer5mb7QI9ZSWUY0UaLCKA7B2qA0ZSTsyNDrV6ZThRh0+4+f6tYYam42hGAjHd8FHCLS3mvvZgJLBsImYQgMC08p7xDgrSYimOw25v7a4kwseV+I0hKM3CBFgQEhRQlayp65D68Ag6A+2XshI7XURkESWxpSyEfsS1O/eH1H4P9gcAB0BgIVkoIvw7RabXgioASHc9GkBGgCVmKOrqvG6i4AibBKkCAdREo7NtgmKWNfUk3jratWaQ6Sv62YOlDth2RyFNMecWzJeDvdcZkFnOExOZml1TbWz1UtJyXYByBloMs4gg11pvuv7SA3LW1nc2CpmtS88OUMTWLGPDm5q3y/V3h86pD14aaWlt25k4ZE2AAUFA0MTIG82mbeyL+bfS04+9Zm+1A69Hm8sEAG/Mzow7WT351faM99zqGn3005x5feneARCjfmsdaCP99dArO18fG+flriPi3Vl3Tdh874/5k5/sIggyPnN54mr419lF66ECVDxye8X7+LtfbOc3xsUXJpIbA6+6tjJOq7qWbjzYPrM89+Z5/FdlVCqMSsUcm/5i7Gaw+n42Uo/rfFe+52Fz07qSSuoc6u2JrVaJntj0H+lzc9+f+AyoMFAxhP//SCDI059/2N9pl8o5S5UbSTK6Mr0AHW3/AHamcpE7Vf/20yogBJAAwL98jbXSKoG71wAAAABJRU5ErkJggg==" alt="台灣之星支援VoLTE/VoWifi機款說明">
-                                台灣之星支援VoLTE/VoWifi機款說明
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.taiwanmobile.com/cs/public/query4GBandIndex.htm" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1703487678">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADSUlEQVQ4jUWST0wcdRTHv+/Nb4b9xy5TQajBksY/qYbGxMZYYrxshQPxVj3owZ7xhA0eetuDSaNtxMSkHkxs4sF4qCYe1MRWmhBLqRAisbRVpNWy0ELZnYHdnZmdmd/veQDxe3in7zefl/e+hD2JgIggwdWX++lArsw2lyVuj3Zs/gMY8yOAn9EKp+hkvSoAESAAwAAgFTARRF8bHMsmD6adWvWCE9ZOcbMpErQNTPSO+M0LiNrTcskdI0CkspulffJiecLxN85acV3BUIJaUMdywzZ/auConfCA7YLEgZVJkS+codHV83ubAMFieTybkUmp3vVoOyRZbRnxoyJrUfK7gYmR0pPWDh11GN1KqC/rIm6cpuFwkuSbzEDafXiBLHuHb9/L0kbgSiyOKIYkIljSEA3iFCAHsTzDdXl+MGqsvF0Mr428qJB3h1VUd2Xer5mb7QI9ZSWUY0UaLCKA7B2qA0ZSTsyNDrV6ZThRh0+4+f6tYYam42hGAjHd8FHCLS3mvvZgJLBsImYQgMC08p7xDgrSYimOw25v7a4kwseV+I0hKM3CBFgQEhRQlayp65D68Ag6A+2XshI7XURkESWxpSyEfsS1O/eH1H4P9gcAB0BgIVkoIvw7RabXgioASHc9GkBGgCVmKOrqvG6i4AibBKkCAdREo7NtgmKWNfUk3jratWaQ6Sv62YOlDth2RyFNMecWzJeDvdcZkFnOExOZml1TbWz1UtJyXYByBloMs4gg11pvuv7SA3LW1nc2CpmtS88OUMTWLGPDm5q3y/V3h86pD14aaWlt25k4ZE2AAUFA0MTIG82mbeyL+bfS04+9Zm+1A69Hm8sEAG/Mzow7WT351faM99zqGn3005x5feneARCjfmsdaCP99dArO18fG+flriPi3Vl3Tdh874/5k5/sIggyPnN54mr419lF66ECVDxye8X7+LtfbOc3xsUXJpIbA6+6tjJOq7qWbjzYPrM89+Z5/FdlVCqMSsUcm/5i7Gaw+n42Uo/rfFe+52Fz07qSSuoc6u2JrVaJntj0H+lzc9+f+AyoMFAxhP//SCDI059/2N9pl8o5S5UbSTK6Mr0AHW3/AHamcpE7Vf/20yogBJAAwL98jbXSKoG71wAAAABJRU5ErkJggg==" alt="出國頻段確認">
-                                出國頻段確認
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://drive.google.com/drive/u/0/folders/1Ojv9Pm6fig6lk3NYN2VIz5Ta5SySI7Ae" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1747821313">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACt0lEQVQ4jZ1TTWhUVxT+zjn33TczeTNm8rMwMgzUhVWKjotutAGlVhRKKW0tgnEhrtwKapGALy76Q7sRXNlNq4tKbAvRnSB1U6EtSKWlUGml2FaCzSKZZJz33n33HhdJNNCsPMtzvj84fMD/h9bZAQB0nZtZh6zbvjjwei93h0PmCACqFdaLAw+u0sTDW6uY9dwIALZNv9lKotov891uwy32sQCLt+vzuDR0t/u467dvPIKHK2AFAH5GT5eVqxSfJ+HGANuszHyRZEVx1vyeifGN4SqmCNAVLJ4LpGCkCJ1v3tktRibKXuFja2KXNOyJxiO7Oe5WskV4I5jQGeymFEHTZe7zBAqKAn8EQAAEFdGkWZs9PvTPLASBgEAEKQM+Vl2bYMV959fvHeVYxn1elgDIVIW7Uj81utifQg1MBHIZSmPxmp/B0dUUBIBemt7XGOLBe0TUCoX3bCWC6s8//frKq/oopfIgfmRGp8zhTAQB8Dc77MD76DIAbfLwSYltOxQ+ACwkjCA4gzQt6RKcIXwAYSggrkDgGG0YnCRAafv0W1ti0TvqaRAheK6aqCzC1buHZo4gnTKHAFxLzwX9dsMVVJYOF304wyowmOegu6j14Q/j7JLvgnNEBLAQtSut+5YbCx5BDBQ9smFz8aB+4bd3twTnVQmIhdXY/l7p3vr837gz0CHauDVbin2TRrlZTUYCsIlBYwEyVlW36Y9oZGRwto/OX7cDuzFxc3q9cePepwyQ53huEujlFet5NFHvyr7z+ZPSu34Zil6ZF1nZzJ+4L18+5v8barHhhTyv6yRAKoDy0veDj+NdZ6L26PCexFqGWJEoZo4sc2SZogrHTDJXq3FUadP4n5c/q9++/5Vi+Y0AlADS/Z+4N5yGJhSeeW1PPEIQBRWSczJ/5zTdVIBoTaleeJ4CD2IkSqxcdJIAAAAASUVORK5CYII=" alt="AI功能操作方式">
-                                AI功能操作方式
-                            </a>
-                        </li>
-                    </ul>
-                </details>
-            </li>
-            <!-- realme Folder -->
-            <li class="bookmark-item">
-                <details class="bookmark-folder-details"
-                         data-add-date="1660556670"
-                         data-last-modified="1744358915">
-                    <summary class="bookmark-folder-summary">
-                        <h3>realme</h3>
-                    </summary>
-                    <ul class="bookmark-list">
-                        <li class="bookmark-item">
-                            <a href="https://cs-bpo01.qbicloud.com/ecp/" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1732675459">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC9ElEQVQ4jXVST2gcdRh9b34zO7vZmaapidvGJKVKtBZBlFqRKirEWBWxhDQeLEjB5FYPCoG2l9BCPUnFIkiLoLUIrqJgyUGRRkQ9FEW8bGssJKbRmLS2dv/PzszveciqUewH3+Hj4z3eezxidQhAALDu0Jc71GiOU85QoE2gSHFZwgxscrLy+hNfrcWwfaBw6rd81m8dKf/w8wtplIQ0BqCz+pRd3TRppMLJaq1xACeerrdZxO63fgzC9Z1FJ5vf9cd35xFfrwE2/QnSeZACcQdotoIEPR+2WZuuXLHP4t3hugNQ4frwqJMLdtmojvxg7yUvzO0rr8Tby68NP1M+9tju8uWl7Wka74W1C4oacLLBU+FNPAxQHHj/l52uwVl4vqu4tShkHp8f7b6wxif+yifY//k24+EzuN4mm7SiNLEPOcblBD0/A1mKmpwf7b6AiW+9NUABAKbkVo8PlSxxyMapQ8fNhf0949zy4a/zzOYG1KjNzkn3YE9fE6TwvyNuOH0x9C7XvjdBsMXvys45lAoGomE6i7H+xo3BAEBd3TtYzt+6sZQbKABir2tB1BAqUoY3Bv5HR5QIxgIAHJfJ0oR5DwfcN+7sKa4EEv5NpHZX9hQNJPaeUQeIrZQFiGVnf+ads4fdVzgZnLhtNhgaISHNwP1HddvSB2MpSLnR0ghdb1A2paAZ6kzfjqbp+sLz5KdxuoQWh/3dpRIATE1NOafv2jepbOcjSb16PLFY9F1Ow/NvUdyMYuhhAkBzeturfmBeiuspQC6kVgez50ofM1DHzZuvXQzX5TpRuZJamCrITnq+1Kofmxvte5kCiE8LHVG6oejnzZOKBCsiSWwJ1PyR1os7305G8y14CFA1dDNWSXLpahTfe/25zdf+DkynCvm4p+so4Ix7LnNwCFBAFOFrez/etM/jm+RuQIKstbDpA3Nj/efYrhvZblz9k9sfNK4ZF/gohIKl4+TSyu+RyRfva3y0WEHXQcfGCzXjDi2PbFz5E8O8YPQcGQOdAAAAAElFTkSuQmCC" alt="新ECP">
-                                新ECP
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://bpo.qbicloud.com/ecp/Qs.MainFrame.page" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1675472082">
-                                <img src="" alt="ECP" class="bookmark-icon">
-                                ECP
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://rcsm-sg.realmeservice.com/#/login" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660554434">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAACZElEQVQ4jV2SS0jUYRTFz73fN4//OKM1CVkZlQuhLCiSRDRESSWjRQamIKMUFGhEgebCBwlJKNqqIhEy8bGIyE0NYSAZhFa6chEJLaSHLXyg4zj+Z+b/fS1mfJ7VvXAO58L9ETrKAAAggImZSGltacVETExAbMWGZNxNRFpbZtCKmJB2NtwqElbhNSgFm4PthibSWscDRAQrCuDyifOFR059+/ezf9J/LOVY+fHcZMP98df3dzMTAJGQWmtBRSe1ZSU6XP6yptozRZLFj6W/GSlpH8qa9hkeQ9rvZpYUpp0envlqRsLEzAxC1OwqqD7o9qZ13855dpOA3os1198/P9tzp2So5Wh37SG3t7OgClGTQWxZUcOVVJp+rvnT4OLin84rdU8u3Lj0+lH/xLDTlWhzJS4tzjWPDZamZxmuJMuKMqCZSLIImCGb25t3OKP41UP/lP9evm/K1y6JIcR6NCJZMBGgmYUMBpdHZ6ebcq9FwmtZL+tHZr7UFd96nO/rmnwbCgXA8n721dHZ6WBwmYVkABCyZqQn1bPXX9EKAMK2P2GPz//0xfgbKaS/ojXV460d6YGQAAgdZUysIusHEpM/V7b9Xl0qHGoxzRAITodrpPxBqsebM9A4tzLPNqfSigEordjunFuZz+ytTzY8E9UdCYY7weker2pPNjyZvfVzK/Nsdyqt4g2xZwtmK2J67MZYZZsgAmBpnTfQGAiHhM1hqTgdvAmJpRRLRyC8nt3XsBBaXQitZvc1BMLrLLfcOxo2oGJYEQIAaADCpreRtwXfprRWMWZi6V3uHSdty+hdw3b9B8K5AZMt4jF9AAAAAElFTkSuQmCC" alt="RCSM">
-                                RCSM
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://oln-realme.myoppo.com/login.html" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1744358915">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACb0lEQVQ4jbVTv2tTURg937335eVHX03T2mqKxUb8gToIQRRxEBFBqJu6KOIggvofOEURQXB26OKkSFoFp6KWtoggqO0iKIoiVKlUbDRGk5e8++5xCNYsFRfPcr7h43yHw/mAFUBCAIAlqJV2ltF6fHa3fXz2EKfPdQEAp09lAYBl6GXBjrkTwul9holNkxDZ7KL4PKOwJmKSBJvG63nRCO8WGp9/vOg9UfleLkMfPQYnAH8LGGAGzhbqIqySbpdKmwScrQj9QRtN7FUq1Z/aYq4051ZfoGtNCd4/6HRgEBQl/hYpLTRwbk8cRoECMxbvDLRdi7Q89H1vzsZ4Vqnmrn1/vb0PqKF788yXtkAtIGyTThQU460Iw1yLFbBrES7tuWQ2GGmqFHQQrMll5akYGtr0VRLXRUCDNzXhYA6ilaKNfBtWGQWLlGwAtWqADZOJlDGijNrhJxVix3Hte2Mi7RwUigBcRGcjFTdCHeslqIHASd8wdfdqnVzV46lUl2kiaWuh34qYHold4mOzevoSy9AGswAGLAEtjH4q1+9cemiDoemGdfwAQQVkfyat1yqt4BwBuvuOnLr4EjQAABsDBGLWXWbjuoTzc08M3OWv9u2j+Tu1ZuFAIZ3ozRx0nncckb1pghtjyz14fgbetgP776HFLbqvPsydwxNLze4j+fxo/W/lIyEioCoWi3BxHMNFRpLJT4s5nM7nR+vk0c7mCVlSZJsB4E+In2aprFXaMMu6HR+S2wssQYmMxZ0HRUpOpM2dTtTsAkRrV/DyicB+bs0TkBn8wwP9tgYA4a2dhxVkPa2d9E/OvSIgnX3/r/gFmIYpwd7UbLAAAAAASUVORK5CYII=" alt="R-Learning">
-                                R-Learning
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.takkyubin.com.tw/YMTContract/aspx/Login.aspx" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660554730">
-                                <img src="" alt="黑貓 企客(帳5438648808/密54386488)" class="bookmark-icon">
-                                黑貓 企客(帳5438648808/密54386488)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://cs.realme.com.tw/login" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660554598">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABfklEQVQ4jZWQTUsbURSGn3NnnDqiVapZBAQNrix0UwJdFLTddetPiIXpuoj7/gAXLttF9ZcIFle12VmybCBBkkUJ+TQf5t7ThXFokmlIX7hwOfc9z3nPlfNidxuR58yQCoPSryeXn97KcPLNd+g1qqlZABQ2t7rHwMkUAEgBpAMPL6G3bh1tqxgxG0ls//Gy5gseMmXoqdK2+s9wMaDUsxiB1gxzkuRr8U4BXq0EeALXrQG7wU+2/dKYMWyXK8u1Qnmi/yJO8L01iKsvggKLpj/hbaZB0uPjyRpFK9PB5lxDMcZj6aVF3gCjeNL0jOsD9DWgblcBqAw3AajbFB33NGaYXEaqUSb8BnSABsP7dwvctwF6ukjTrQBQHQEabp2OW/1ri5HOit19cbaW21m+0drn3yDrY3HrVajdTm0Rf+LhQ4r/lkkuy9V87XKVCJBnHw5oBOHYEQ0RTmOT00iyX/b8JACAZHK9hPJHzUcWOMKnNV/KBOmP9681Hy0A/AFqCoT+5l6qcAAAAAElFTkSuQmCC" alt="realme文字客服">
-                                realme文字客服
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://auth.91app.com/identity/login?signin=4bdbf5c33f3c3ddd847b35755bd8e98c" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1665216626">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACaklEQVQ4jX2TsW6cRRSFv3Nndr1eL8SxSYgigSWIgAhF6UECIaBAFBSLeBEegJJXoACJGpEuLSDRIKE0NKSxhBAQFISJbbxe7+4/91D8a4cCMc1MMffe7xydq7c+ffBlqEzJLg0KEP9zEiwwUSPd7tQSZerWYSRhLZrJNEhg91Xrd4QYFskIZUcpdVrdurQdktWl/Ox21aVR0NKEepi0KSGOz5JfjpurUjbQuqwGSWKV+NpE+vC1bdIQgi57go0iFs0Mi/j460f6/SQ9CMugKlAIZoumN24/yb1fzzg6S0LibGWMeWIjOFkkVyaF15/f5LPvj7UzLqRRnCNuVLG3Xflmf87OZuH+wyWrZpYd7B+s2B0X7t6fcWN3wHggcu1PBeia2R0Xbl/f4K+z5NW9EVcmhWuTgoGD08YLTw0YD4ObVwdcHheO5o1a1DeIEPNVMlsm05cnPDzpeGVvxLIZG57bGXC6St6/NeG3o47TZRKhxwQ1xOG88cUPJ1y/VPnkuyMubxY6m0GI0UD8OWtMb00IwaN5Y2dce7MB7D4FAEWwSoPM4Tx59+aYzz94mndeHDNb9g0l4bUHsU4K57ckaogSQsDWMJhsBFvD4PFfX9TEv4JGCFqa2TKZr8zpKll2/aRFZ1bNhMAWa2Cq1wpKwX8vUu89s8VHb+8yqmLRmZeuDlm15M0bm6TFtz/NiZBtZHDth1vjKt17sPTB6aFGgyDdR/mr/TmLLhkNegk/H3aeDCVjhFxVarjrUMitpX78Iy9Cci4vEInBMKxSRJi0VGvUlu1OlDolOyMxqui/N1oX62zbKlUt251/AN0cO2i3Oo48AAAAAElFTkSuQmCC" alt="realme商店後台登入">
-                                realme商店後台登入
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/1HxXbATqpO1sRvOR3-JNxaUPg2RtT14cRgN1waEDgCtQ/edit#gid=0" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660554978">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVQ4je2TwQmDUBBE334swBIsItqIAY/WkA60A8tQsBObsINYgeMhCsGD+FXw4rsuOzPsMpY0aT6KCgjxwKA3owgkCt9lAEEkUTlBtB52WUuXtXt0QufrvOa0gL3qVMyxfYib98UJ/lnSLC5b3H/ER+D3xu+RMjE30pn0MegP7A9I5QTEeSThZqRUhQAAAABJRU5ErkJggg==" alt="realme全產品通路發貨訊息_2020">
-                                realme全產品通路發貨訊息_2020
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/19cFZ0T_P3aeol3V4KyrCXpdl1CWJGIfjAYegXAw9mnU/edit#gid=0" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555003">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVQ4je2TwQmDUBBE334swBIsItqIAY/WkA60A8tQsBObsINYgeMhCsGD+FXw4rsuOzPsMpY0aT6KCgjxwKA3owgkCt9lAEEkUTlBtB52WUuXtXt0QufrvOa0gL3qVMyxfYib98UJ/lnSLC5b3H/ER+D3xu+RMjE30pn0MegP7A9I5QTEeSThZqRUhQAAAABJRU5ErkJggg==" alt="realme全產品通路發貨訊息_2021">
-                                realme全產品通路發貨訊息_2021
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/1SIFFEpyzJNg9xvvkOxxCITLTdidAdKNX4q-OOc2y7L4/edit#gid=0" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555021">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVQ4je2TwQmDUBBE334swBIsItqIAY/WkA60A8tQsBObsINYgeMhCsGD+FXw4rsuOzPsMpY0aT6KCgjxwKA3owgkCt9lAEEkUTlBtB52WUuXtXt0QufrvOa0gL3qVMyxfYib98UJ/lnSLC5b3H/ER+D3xu+RMjE30pn0MegP7A9I5QTEeSThZqRUhQAAAABJRU5ErkJggg==" alt="realme全產品通路發貨訊息_2022">
-                                realme全產品通路發貨訊息_2022
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1580571186" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660556458">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAArElEQVQ4je2TMQ6CUBBE3xJr+VpZewRPYmEBVoYbiGew5gRgSeMBPIVHoKCywEgM/VoIhKgxfrF0qs1OZna2GDG75QrVSFUNFhCREgjFjb0zMLYRd00chNEjUQYpZZAyHU7eGqiqcVDkm+sNnD5iAHFjT6lj28Ak/m8SDJphtl+3y+MiAmB+2JJXxWcG2fX0ROZV8XLfRe8X/gYgJvEvtk1sxfcy6aauprUYCG/zujIdspz1QAAAAABJRU5ErkJggg==" alt="realme客服表單(模板罐頭)">
-                                realme客服表單(模板罐頭)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660557063">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABlElEQVQ4jYWTPUsjQRzGfzPmzOpJsoKVHJjmvEq8aAjYufjSHCqpDzk4AsoVwdxHUAsLNRLESgsRbJNahESxkBhh/QarhZA0l+4CyoyFp+5OzGWanXle/vs8DCMw1odfK1+VJAdM+uCyVGQf9nZcUy/eMZcA2xQCDalwzCHSf1CCQhszgP2PDyboWtv4A7qd6XlpDfX6S2TncXen7EvQwQwgBOq6+i4V8h+2Z6fJJBNv5PrG6/5jfz+R0ThAif1DD2T2Pr1YDAzIJBPkK1V+n5zyY3TE6Nrlq0QMVGFw/ygVGHBTq5NJJrCtMKvnFx2bgcoFbmHq6JjV8wvmh4eppn9iW9b//ZpYYMDCl8/kK1XylStsK8xQNNoxQ6DC1sw0B3PfADi7veOmVnvlrL5Iq1vgBQYMbOba/qm7t5eQ1cND868PlVkJotEpplTq+ftyEwIPIVP36cWiMMWf0suTWlMy8chYgujYuHM5ES/78ZApHPi+5IbDwgNiBuU1m7rlNUoTcJ14Q2mdAvxiV2mdcp14S90nPTZ2yJf7z7oAAAAASUVORK5CYII=" alt="realme佈達onedrive(oppo@54386488)">
-                                realme佈達onedrive(oppo@54386488)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1688350583">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACt0lEQVQ4jZ1TTWhUVxT+zjn33TczeTNm8rMwMgzUhVWKjotutAGlVhRKKW0tgnEhrtwKapGALy76Q7sRXNlNq4tKbAvRnSB1U6EtSKWlUGml2FaCzSKZZJz33n33HhdJNNCsPMtzvj84fMD/h9bZAQB0nZtZh6zbvjjwei93h0PmCACqFdaLAw+u0sTDW6uY9dwIALZNv9lKotov891uwy32sQCLt+vzuDR0t/u467dvPIKHK2AFAH5GT5eVqxSfJ+HGANuszHyRZEVx1vyeifGN4SqmCNAVLJ4LpGCkCJ1v3tktRibKXuFja2KXNOyJxiO7Oe5WskV4I5jQGeymFEHTZe7zBAqKAn8EQAAEFdGkWZs9PvTPLASBgEAEKQM+Vl2bYMV959fvHeVYxn1elgDIVIW7Uj81utifQg1MBHIZSmPxmp/B0dUUBIBemt7XGOLBe0TUCoX3bCWC6s8//frKq/oopfIgfmRGp8zhTAQB8Dc77MD76DIAbfLwSYltOxQ+ACwkjCA4gzQt6RKcIXwAYSggrkDgGG0YnCRAafv0W1ti0TvqaRAheK6aqCzC1buHZo4gnTKHAFxLzwX9dsMVVJYOF304wyowmOegu6j14Q/j7JLvgnNEBLAQtSut+5YbCx5BDBQ9smFz8aB+4bd3twTnVQmIhdXY/l7p3vr837gz0CHauDVbin2TRrlZTUYCsIlBYwEyVlW36Y9oZGRwto+OX7cDuzFxc3q9cePepwyQ53huEujlFet5NFHvyr7z+ZPSu34Zil6ZF1nZzJ+4L18+5v8barHhhTyv6yRAKoDy0veDj+NdZ6L26PCexFqGWJEoZo4sc2SZogrHTDJXq3FUadP4n5c/q9++/5Vi+Y0AlADS/Z+4N5yGJhSeeW1PPEIQBRWSczJ/5zTdVIBoTaleeJ4CD2IkSqxcdJIAAAAASUVORK5CYII=" alt="realme佈達(原Onedrive內容)">
-                                realme佈達(原Onedrive內容)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://84459043.sharepoint.com/sites/OPPO-" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1665216845">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABlElEQVQ4jYWTPUsjQRzGfzPmzOpJsoKVHJjmvEq8aAjYufjSHCqpDzk4AsoVwdxHUAsLNRLESgsRbJNahESxkBhh/QarhZA0l+4CyoyFp+5OzGWanXle/vs8DCMw1odfK1+VJAdM+uCyVGQf9nZcUy/eMZcA2xQCDalwzCHSf1CCQhszgP2PDyboWtv4A7qd6XlpDfX6S2TncXen7EvQwQwgBOq6+i4V8h+2Z6fJJBNv5PrG6/5jfz+R0ThAif1DD2T2Pr1YDAzIJBPkK1V+n5zyY3TE6Nrlq0QMVGFw/ygVGHBTq5NJJrCtMKvnFx2bgcoFbmHq6JjV8wvmh4eppn9iW9b//ZpYYMDCl8/kK1XylStsK8xQNNoxQ6DC1sw0B3PfADi7veOmVnvlrL5Iq1vgBQYMbOba/qm7t5eQ1cND868PlVkJotEpplTq+ftyEwIPIVP36cWiMMWf0suTWlMy8chYgujYuHM5ES/78ZApHPi+5IbDwgNiBuU1m7rlNUoTcJ14Q2mdAvxiV2mdcp14S90nPTZ2yJf7z7oAAAAASUVORK5CYII=" alt="realme後拋案件 - 首頁">
-                                realme後拋案件 - 首頁
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://app.realme.com.tw/admin" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660554694">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB6UlEQVQ4jZWTT2sUQRTEf9XdWXLYRQ2CGMUQ/yWKLAQFwSDqJeDi3S/gx8jRT+HZk54ECRK8hSBIPJjc1BwMBCUquigYZ6b7eejZmaw52VAM9Lyq17yqJwDbOL9k8suo05cmumjCowByAGAJrAIro1n5Cys2ZfGhrn1YlW3MLhluRep4XAfUAU3UCLVABVbWKCAVmBVRpEGwFJflvAfRQA7ks0hWACLY6L+QyVuKyw7R53+P1V/RD8K6+abF8zenGP6ezN0MyijuLuxwovcHrK0T1g1Y8pBAKQ+LyK1Lu0QLIE9wieAij9dmeXB7C0gZlsCSD+1FBCpAPHo5z9z0EBBTvX1uXPhEjKNhVnVt5oVRV3A1RG9yn3sL79nem6KMjmcbM1w8+bUlN0i4VvWAVRhYwZNX5/j+07Ews8ud+e0DVrYc1zx9TCRBKrl//S3vPh/j9NFvh8nk17hD3a2sZ1Jw9vgeV2c+8vT1ZSyV4zUpizioImlcwKvKibOCK9M7nJn6woutuXGB3DgqrfsfIhzJyQuAw+RQk8ycHMNQY18EqzDiMGBxE+xmYycONY60J5NHkY4jKzdl6yyZsSLk8/bVkP6Jr7UBIgEWEQOnRVYlBoatWYpDrIyjjRuDFfU6x6Fha4iBFln9C+blSjfo9Wh/AAAAAElFTkSuQmCC" alt="realme審件後台">
-                                realme審件後台
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.realme.com/tw/" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660555861">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB40lEQVR4nGRTSW4UQRCMrC4GxvZozPoKkMwL+AXiZIkTJ37BCYk7Nx7AB3gDEhJgH30FIQ5Ywmax3VXhyKye9vS4Wt215RIZkZ35efcxkN+h5yMUg0Z8CIt5NQzksCQ6fTMOcNE/N366e4BsD/EPRVbJLWqN1yIEVyF9Jd9OG7Jibp2SHho/3iOqnubMcNiytptg8FtdnjY48SSkDIaz+Z2fqwp7/fYvj74V65L76MDoiLjcMXv1Ypvzm0rQ0FUhuF81PKWAaT8D954d2+FRxeaYKd2PD3fs9tJQ+wjM7LCSr5QqJVNxsMVWwqyreP9mgd1lQulbOQrgd2Rptl5uRsThwHMNaH0BiiI92buB5QNRfu71DYT8p3lZwm8MMXBdLLOBrz/EzqkKPWfw4LIo83jvc96sMy5bLBlDsmndIZxXajZnT0ZkcFOqpl681lbT/XoyV1uceLB24FRyIvtVA05Oh5lM4gKMrgshLKklXP/cDnytCh6d1hho/eY6gtEKroOi/Ppdeda7Eow6HeLQajYJQu8DBbHKotSBJinCy6dz+/6zYnFLSerQ0UOvjUi8gxO66z+Tm2zL2Nk/IaKzRgRjJePPlFDLvmJ9RY7uqP4tJ+TFcZPL068TGzrloP0LurJ/CQAA//9E1spkAAAABklEQVQDAMg7DyJ/XfrdAAAAAElFTkSuQmCC" alt="realme官網">
-                                realme官網
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.realme.tw/?utm_source=officialsite&utm_medium=navigation&utm_campaign=realmestore" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660556012">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABYklEQVQ4jcWSuUpDURCGv5mca1wS3AKCRsQVCwsREXwFCzufQB/Ct7DyHVwaH8DOSsHGwkLBKijBLZrtRnPPWNwYrxErC/9mZv5/Zhj+c+C/IXZAz18WOPJ9V39b0N2XxzrvgjZngCZq+Z473r1HUHxbNG+YplAMCIC31oCCj/CqsWbgFUGf6tAwCD0QINqL3tfhMYSzS6OsEBq8hKAZ0bqHKAUSiErxOGc7exHL88LFDQxnYGoUrgtGpSY0341MFiwSnIPJMbgpGGEobG4oWnwwZmeFpkCpArcl4+TcWF9TKnXj7h6WF4SBflhZFXb3jadQKEdGrWS4kUFhpgZL80L11TM9oQRpODwyFqeFdJeQH4JsANk0bG8pz+XY1/FRQew0Z6QAD7hE/HTfA82Wwb5lqm+Z2sQcTuMi9U2IEX253+755OJPII5GtWA/nxfriEkk+xyF6pwkCDryzuHfuP/DByxOhB4J9qhhAAAAAElFTkSuQmCC" alt="realme網路商店">
-                                realme網路商店
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://zh-tw.facebook.com/realmeTaiwan/" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660556070">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABe0lEQVQ4jY2TvUoDURCFv7kEs9FmEXvjE2irVYKFjaAPoGghJoJgeosoqKUknX9FbO00D6D4Al6ttDKirbAiZJOIjsXmdzdKDizMHuac+bn3CiE4WU2JsqjKApAEELAqWITd2pFUuvOlFbg5df0qeYFc2LQbCoVEg12vJF7bwM2pW69yrTD1n7irqo03SHsl8QyAXyXfT7w5C48H4B8H38VGu4spf4g8gDhZTfLDc1i8NA2nq73c7RPMHXYRhnSMH3b6tbk804mvLJQtfPihUb5ZjClMSkQO46OdOHMOXjWao8KCkQEW10/cRNKEmZOVYGHjYx2utcTt+aiDASpRuj8eXnv/FWxMlUsRtlpk+R5e3oMjdIcDbq/cNHjrNRDBirOmKQzX4WqP+50xEpk/WjJMmNqZ3KhSHHSMdnWlWDuSigGof7GjYAcWg42PBPcnOIWSePUG6UE6EaUYHybtFYLHFIGT1aSzrqX3T73TJpx1fU5ktOCsaSqc/wus3Yx1Cv0t/gAAAABJRU5ErkJggg==" alt="realme官方粉專">
-                                realme官方粉專
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="http://www.logistics-syn.com/index.html" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1666579926">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACK0lEQVQ4jbWTO2uUURCGnznnfJfdJBpjbATBQlNIRCVWNqZRkAgpJOlEwUKwENNYL4KNguINwSKVFon+AQslAStBE0gIpFMxLiJLbu5uvss5Y2EMKGKjvu28MwPzPgP/Xyp/qsrPRlFqkzHsCjTmLPcuZwAM1hx9p4UB4OJACaK/DKgZqIUdt2eu2rh6QYusKS7p8kU+UcCTxNkJfCkoFmFtAxluXjn4GRD5sXnbjZn9URrNio2rWhZIFEO+saEaPkilq0/zNqhiOrop1xsPl8cOXaJWM4KqIKI9t2YnTNo5qlkzw0UJvvAgRqwTLfJSXOTUexAKsVEoyuax1bGjbwWg5+7cSRNVn1NkqDFQZvOI7RdrUe+RpIK2v74X6CBKeyVOCa3Vl42VgycsI5M23b3zmjGSaJEtE/xs3hMPuZbfG1QrqC6JmJXgOE/glRh3JLTX6wK9kV1adHxZkOUF5zC2unmoCqvtyvr2JMFEVdSDjWPa652YqIs0rVLmAkSIYHk3Feg/U8e644SyCZqSxvsQ7UO0RdAWxuSI7MHKYTAAAfXTjM/f2UqBcxP3STtOkbcykA4gAzFAjIY2YmLAo8FjnUXtEOPDi2YTCsHn1ymyjxhXIDSwURu0jmEaF+XACsIaUcUTwgPGhxehZswmSMLjs3XUv8C4blRSkB5UXlPkN1FNgE4C3ZRFBsWzzb7fcD5Yc0wRGPhkefOo2CJ15MB379NR/0+f6a/1DSsO81sITXc2AAAAAElFTkSuQmCC" alt="realme TV聯強國際集團 通達智能運籌">
-                                realme TV聯強國際集團 通達智能運籌
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://los.synnex-grp.com/LOS_V/views/rpm/spqi/spqi_main?OA=OA" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660556166">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAByklEQVQ4jXXTv49NURAH8M+9bzeLQqHQUaAgCpWISqcSleiERiNRqHSyrYJOQ+NPUCBBQiIq0SiERCQSobDrxfuxu+/de84dxXnLs9YkJ+eec+7MfOc732GLBdVsr7fc97b++1/7yNKc477tEvxjmxmHnG34NODOkIcbrE150nDpCzv/m3Uz8pjnQUyJCdEnNohENLz9wdG/kARVsDD7PjxgrU/q0/Rp++Q+7SobQYy4N4+4roiKtEz9knO72ZXpukLagpKpV7M4Idccm/l1YMSRCfdaXh9neJccxJju+2yt0K2SV0tJo2D/MnVQGfMhE0FcK1HTZdJ7UluC5ZY8KXvqiIdc/F3GiK8Dmh80Y/JVEjLyGfIt0iPyS9Iz0nnSdcbBTTPWL0wLtK5Pk8hPSWdKkKSgypurIj2elTngRgUDruzgdrA0Iu0uzNW/fibdUHwv7sZfqNNXBWWt7rM8L6GTD8wmxTqwUpzYzDdogBWmNdoXJkBjy7S8VwoSzUx6MGDYzQY0K3PhZuhO53DdDLlZzSvzT23I+sMap4MQSh1r2diz2+Fnzbp37e3i17UxsNzAvWHjD4vIc2qDafrL+aL1WCM1b3nqKgrtf/3X9R4v4Z3MAAAAASUVORK5CYII=" alt="realme維修進度查詢">
-                                realme維修進度查詢
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="http://tpl.synnex-grp.com/TPL/queryShipStatus.jsp" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660556179">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACK0lEQVQ4jbWTO2uUURCGnznnfJfdJBpjbATBQlNIRCVWNqZRkAgpJOlEwUKwENNYL4KNguINwSKVFon+AQslAStBE0gIpFMxLiJLbu5uvss5Y2EMKGKjvu28MwPzPgP/Xyp/qsrPRlFqkzHsCjTmLPcuZwAM1hx9p4UB4OJACaK/DKgZqIUdt2eu2rh6QYusKS7p8kU+UcCTxNkJfCkoFmFtAxluXjn4GRD5sXnbjZn9URrNio2rWhZIFEO+saEaPkilq0/zNqhiOrop1xsPl8cOXaJWM4KqIKI9t2YnTNo5qlkzw0UJvvAgRqwTLfJSXOTUexAKsVEoyuax1bGjbwWg5+7cSRNVn1NkqDFQZvOI7RdrUe+RpIK2v74X6CBKeyVOCa3Vl42VgycsI5M23b3zmjGSaJEtE/xs3hMPuZbfG1QrqC6JmJXgOE/glRh3JLTX6wK9kV1adHxZkOUF5zC2unmoCqvtyvr2JMFEVdSDjWPa652YqIs0rVLmAkSIYHk3Feg/U8e644SyCZqSxvsQ7UO0RdAWxuSI7MHKYTAAAfXTjM/f2UqBcxP3STtOkbcykA4gAzFAjIY2YmLAo8FjnUXtEOPDi2YTCsHn1ymyjxhXIDSwURu0jmEaF+XACsIaUcUTwgPGhxehZswmSMLjs3XUv8C4blRSkB5UXlPkN1FNgE4C3ZRFBsWzzb7fcD5Yc0wRGPhkefOo2CJ15MB379NR/0+f6a/1DSsO81sITXc2AAAAAElFTuSuQmCC" alt="realme服務進度查詢">
-                                realme服務進度查詢
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="http://warranty-query.newboomgroup.tw:8012/manager/login" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660557297">
-                                <img src="" alt="產品保固" class="bookmark-icon">
-                                產品保固
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1660557352">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADR0lEQVQ4jU2Ty29UZRiHf+/7fadnbmd6tS0tQkNsxVTEG4FAK14ikhDjRuNlYSSphD8BEzckLgyJ+4YNexNdKNFATIhpqbeJ2qA1UiwCnXY6pXOfM+fM953vdaExPPtn9eQhABARIiIBgLt/Ls4G+exp2y7P1GvlXURA0DeyCa9/0Vp3aWzf4YUHHcJ/7IjkmyvXPooaW2cXrq14V775A77yIYkAlOC9uaMY3zNs8kPj85mp2Q8HiRoAQCIgQLKrP3/5mYsaJ4JAue9/KLm33r/MT+5W1GhatOKsfH3lDZf2weI0q0zf1fzBQ68PYailzp8H3nnt0CfKtt6u1cPup5+v8vKvZVVdb+CFGWBwgFBvpanWiNW9zVAm9mSMJjcVV6vB4OjkV1Qs/nK0fPO3bxPTJT+laW7uC16+uS05ytP0pEWSEH7/i9FAVV49PkUXLrzsqtWOpNJp2b3/iePcKP59xmNo5yA9nqK9Dw/K5HCKjjwL6B6CdYSnpwkP6RyNjgYCAUEgCk7vFO+c4cR0j5nECjGYSMg5UNq3GB5y0JoQBMDsYYeBXotm0xKREDOxtUZMFB7TNo5GrTEkAjjnJIwMgRieIog4MAFb2wSlGbV6jCRJRCQhmxBJFI5qEIGZARCsFVRrMZiA2CRgJtyvAH29QNhhVHZCdLsCpTQAAQRgxarERKKYpN2KqLLdgROFIEtotoCBXmBkUDA5Qdguh6jVOqQVhAnieX6JSfF1T3uktXL3d2JpNiNJ+YzvCoSxEaAdEhZ/Am6tKTTrsWyW2uL1aKeVR8rzrnOqd+BibIxN+0y3b9ekawytl5TcXWfcWutCcYyNEoOVEuMSWl2tSMpjMtbafF//RX7kwCtL4NR8rjdQhcKGbbuu60aGEhfK86eOyMzJ58QlXWm1Y4rFuB+XitbPpJVOZ+bHH3tpSQtAW9OPn6usrUyxnz2x/9Fxp4VsJqf43TcnKAh6cOPGHSmuh8m4Yk7l8z2b5c7VZ1586gMA9P9MG4VCponyxyZqnPW051kbo9MOIQBy2QxY+zDWmlSubz4zfODc2NhYCACEf4MQAQIAa8uXZ6tbxdOkUjPE3i4AEGc2JYkW+0f2Xtp38OTCg84/N5+miIXbJbAAAAAASUVORK5CYII=" alt="財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)">
-                                財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)
-                            </a>
-                        </li>
-                        <li class="bookmark-item">
-                            <a href="https://www.91app.com/contactus/" target="_blank" rel="noopener noreferrer" class="bookmark-link" data-add-date="1697622565">
-                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAABiElEQVQ4jbWSMWgUYRCF35t/93blktwpErGSoEgIgp2gIAheE0srQQu1soxYai0WNnYpBEklYpVOCWhsBQUlhQgKSqwOQ4h3t5vbf+dZ5DwCwSKCrxq+eTPFvOGPE4ewH9m+3P82IEna2/gbNAE0kzt2O0iSf3baDgEJwGimsmSWCVBVCZC793sQFKPcvfdLda3hUGVBs0RFEWbnmtdv1evfEePw3dv625fJ2w837y00r95MZk5Wn9bCsRlmWbH8vPr4PiyEqnnthne7NtUKh6cJZBfnG2fPx7UPjTPnQOadSwzBWm1mebn6yqz9NXi6lHfmOTFRvlmxI0fzC5349fOBy1eY5b61uXX/rrXa269fDp4thXYr3Jme9J9dlWX5YllFkc7Oba2uDJ4spqdO+8ZG79ED9fsA+o8XaWQIXD9+kGaqqp07MElVDRErNDJIDAGAYmSawl1SQlLuTFJAAFRHhoAkkTs5SokhwB0SyXHSGgcAQO4kQUgaEWmUw9i0W2Oyt/j/z/cbfZC4POaEyokAAAAASUVORK5CYII=" alt="91APP(realme網路商店，詢問關於系統操作、訂單退款、發票/刷卡等疑難雜症)">
-                                91APP(realme網路商店，詢問關於系統操作、訂單退款、發票/刷卡等疑難雜症)
-                            </a>
-                        </li>
-                    </ul>
-                </details>
-            </li>
-        </ul>
+        <div class="main-add-button-container">
+            <button id="add-main-folder-btn" class="add-btn">＋ 新增主資料夾</button>
+            <button id="add-main-link-btn" class="add-btn">＋ 新增書籤到主頁</button>
+        </div>
+        <ul id="bookmark-list-root" class="bookmark-list"></ul>
+        <div id="root-dropzone">拖曳到此處可移至最外層</div>
     </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const BOOKMARKS_STORAGE_KEY = 'myEditableBookmarks';
+    const rootListElement = document.getElementById('bookmark-list-root');
+    const addMainFolderBtn = document.getElementById('add-main-folder-btn');
+    const addMainLinkBtn = document.getElementById('add-main-link-btn');
+    const rootDropzone = document.getElementById('root-dropzone');
+    let bookmarks = [];
+
+    // --- 完整的初始書籤資料 (從 indextest.html 提取) ---
+    const initialBookmarks = [
+        {
+            "type": "folder",
+            "name": "書籤列",
+            "isOpen": true,
+            "children": [
+                { "type": "link", "name": "Microsoft Office", "url": "https://www.office.com/?auth=2" },
+                { "type": "link", "name": "eHRS(線上人資)", "url": "http://cshr.chainsea.com.tw/Ehrsnet/Account/Index#Home" },
+                {
+                    "type": "folder",
+                    "name": "OPPO",
+                    "isOpen": false,
+                    "children": [
+                        { "type": "link", "name": "Twilio", "url": "https://flex.twilio.com/lion-bloodhound-6675" },
+                        { "type": "link", "name": "WCSM", "url": "https://service-sg.myoppo.com/login" },
+                        { "type": "link", "name": "統一認證中心", "url": "https://sso.myoas.com/siam/login?service=https%3A%2F%2Fsso.myoas.com%2Fsiam%2Foauth2.0%2FcallbackAuthorize%3Foauth20_callbackUrl%3Dhttps%3A%2F%2Fgcsm-sg.oppoit.com%2Fportal%2Fapi%2Fv1%2Fsso%2Fcallback&oauth20_state=https%3A%2F%2Fgcsm-sg.oppoit.com%2Forder%2Forder-management%2Fafter-sales-order" },
+                        { "type": "link", "name": "黑貓貨態", "url": "https://www.t-cat.com.tw/inquire/trace.aspx" },
+                        { "type": "link", "name": "智齒", "url": "https://chat-sg.oppo.com/console/home/myReception" },
+                        { "type": "link", "name": "oppo文字客服", "url": "https://cs.oppo-aed.tw/login#/login" },
+                        { "type": "link", "name": "OPPO體驗店", "url": "https://docs.google.com/spreadsheets/d/1CtwmIZublKb_yUYqgdLByM8ffwrYhBV9z1b931KY_2w/edit?copiedFromTrash#gid=1454694516" },
+                        { "type": "link", "name": "OPPO表單(模板罐頭)", "url": "https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1307372469" },
+                        { "type": "link", "name": "OPPO機型料件永缺表", "url": "https://docs.google.com/spreadsheets/d/1DzbmFhv5GFf8-p5DkKlHimzvRou1LyLS/edit?gid=1640156935#gid=1640156935" },
+                        { "type": "link", "name": "OPPO操作罐頭", "url": "https://docs.google.com/spreadsheets/d/16aizSwEhaRzNbnq02eb2esDvsTtWHTgw/edit#gid=1738325245" },
+                        { "type": "link", "name": "OPPO手機分析表", "url": "https://docs.google.com/spreadsheets/d/1ihphqb5kwbZ5VGPhvh5mdLl_OOp6OR1Z/edit#gid=948748319" },
+                        { "type": "link", "name": "Airtable(佈達資訊)", "url": "https://airtable.com/appo0Lgi88CH67Fko/tbldP4APTKOM2lWmx/viwb3JTf6h9erucdE?blocks=hide" },
+                        { "type": "link", "name": "OPPO佈達onedrive(oppo@54386488)", "url": "https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" },
+                        { "type": "link", "name": "OPPO佈達(原Onedrive內容)", "url": "https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" },
+                        { "type": "link", "name": "OPPO後拋案件 - 首頁", "url": "https://84459043.sharepoint.com/sites/OPPO-" },
+                        { "type": "link", "name": "OPPO Life", "url": "https://app.oppo-aed.tw/admin" },
+                        { "type": "link", "name": "CYBERBIZ後台管理", "url": "https://oppo.cyberbiz.co/user/sign_in" },
+                        { "type": "link", "name": "OPPO官網", "url": "https://www.oppo.com/tw/" },
+                        { "type": "link", "name": "OPPO網路商店", "url": "https://estore.oppo-aed.tw/?utm_campaign=estore&utm_medium=button&utm_source=officialweb" },
+                        { "type": "link", "name": "OPPO官網(全球)", "url": "https://www.oppo.com/en/choose-site/" },
+                        { "type": "link", "name": "HeyTap官網", "url": "https://brand.heytap.com/cn/business.html" },
+                        { "type": "link", "name": "OPPO官方粉專", "url": "https://zh-tw.facebook.com/OPPOTaiwan/" },
+                        { "type": "link", "name": "神揚保代(帳/密54386488)", "url": "https://insurance.senyoung.com.tw/default.aspx" },
+                        { "type": "link", "name": "產品保固", "url": "http://warranty-query.newboomgroup.tw:8012/manager/login" },
+                        { "type": "link", "name": "財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)", "url": "https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query" },
+                        { "type": "link", "name": "三大電信 - Google 試算表", "url": "https://docs.google.com/spreadsheets/d/16rPtb3sIXBZ92mK5Xdnskc39Cd9fUJe8a60i9nWhcZ8/edit#gid=0" },
+                        { "type": "link", "name": "台灣大哥大支援VoLTE/VoWifi機款說明", "url": "https://www.taiwanmobile.com/csonline/service/ann/ann3_20160407_143146.html" },
+                        { "type": "link", "name": "遠傳支援VoLTE/VoWifi機款說明", "url": "https://www.fetnet.net/content/cbu/tw/help-center/detail.html?uuid=cab05b57-d6c7-42a7-a198-2571f60b4133&tagId=cbu:faq/charges/postpaid/VoLTEVoWiFi" },
+                        { "type": "link", "name": "中華電信支援VoLTE/VoWifi機款說明", "url": "https://www.cht.com.tw/home/consumer/mobservice/basic/744" },
+                        { "type": "link", "name": "台灣之星支援VoLTE/VoWifi機款說明", "url": "https://www.tstartel.com/CWS/vas_VolteMobile.php" },
+                        { "type": "link", "name": "出國頻段確認", "url": "https://www.taiwanmobile.com/cs/public/query4GBandIndex.htm" },
+                        { "type": "link", "name": "AI功能操作方式", "url": "https://drive.google.com/drive/u/0/folders/1Ojv9Pm6fig6lk3NYN2VIz5Ta5SySI7Ae" }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "folder",
+            "name": "realme",
+            "isOpen": false,
+            "children": [
+                { "type": "link", "name": "新ECP", "url": "https://cs-bpo01.qbicloud.com/ecp/" },
+                { "type": "link", "name": "ECP", "url": "https://bpo.qbicloud.com/ecp/Qs.MainFrame.page" },
+                { "type": "link", "name": "RCSM", "url": "https://rcsm-sg.realmeservice.com/#/login" },
+                { "type": "link", "name": "R-Learning", "url": "https://oln-realme.myoppo.com/login.html" },
+                { "type": "link", "name": "黑貓 企客(帳5438648808/密54386488)", "url": "https://www.takkyubin.com.tw/YMTContract/aspx/Login.aspx" },
+                { "type": "link", "name": "realme文字客服", "url": "https://cs.realme.com.tw/login" },
+                { "type": "link", "name": "realme商店後台登入", "url": "https://auth.91app.com/identity/login?signin=4bdbf5c33f3c3ddd847b35755bd8e98c" },
+                { "type": "link", "name": "realme全產品通路發貨訊息_2020", "url": "https://docs.google.com/spreadsheets/d/1HxXbATqpO1sRvOR3-JNxaUPg2RtT14cRgN1waEDgCtQ/edit#gid=0" },
+                { "type": "link", "name": "realme全產品通路發貨訊息_2021", "url": "https://docs.google.com/spreadsheets/d/19cFZ0T_P3aeol3V4KyrCXpdl1CWJGIfjAYegXAw9mnU/edit#gid=0" },
+                { "type": "link", "name": "realme全產品通路發貨訊息_2022", "url": "https://docs.google.com/spreadsheets/d/1SIFFEpyzJNg9xvvkOxxCITLTdidAdKNX4q-OOc2y7L4/edit#gid=0" },
+                { "type": "link", "name": "realme客服表單(模板罐頭)", "url": "https://docs.google.com/spreadsheets/d/1T8vT3XCIulq2vY8QjeIKN7PBsfOVLKxCEpYqeb6Q1rQ/edit#gid=1580571186" },
+                { "type": "link", "name": "realme佈達onedrive(oppo@54386488)", "url": "https://oppomobile-my.sharepoint.com/:f:/g/personal/admin_oppo-aed_tw/EinDipPQbfVIiXo2l0gIpS0B8ks0d6He7zwUmoRaJngwVg" },
+                { "type": "link", "name": "realme佈達(原Onedrive內容)", "url": "https://drive.google.com/drive/folders/11fljDcPvdGFY28f0DAlu0Rh1hz_MfjnL" },
+                { "type": "link", "name": "realme後拋案件 - 首頁", "url": "https://84459043.sharepoint.com/sites/OPPO-" },
+                { "type": "link", "name": "realme審件後台", "url": "https://app.realme.com.tw/admin" },
+                { "type": "link", "name": "realme官網", "url": "https://www.realme.com/tw/" },
+                { "type": "link", "name": "realme網路商店", "url": "https://www.realme.tw/?utm_source=officialsite&utm_medium=navigation&utm_campaign=realmestore" },
+                { "type": "link", "name": "realme官方粉專", "url": "https://zh-tw.facebook.com/realmeTaiwan/" },
+                { "type": "link", "name": "realme TV聯強國際集團 通達智能運籌", "url": "http://www.logistics-syn.com/index.html" },
+                { "type": "link", "name": "realme維修進度查詢", "url": "https://los.synnex-grp.com/LOS_V/views/rpm/spqi/spqi_main?OA=OA" },
+                { "type": "link", "name": "realme服務進度查詢", "url": "http://tpl.synnex-grp.com/TPL/queryShipStatus.jsp" },
+                { "type": "link", "name": "產品保固", "url": "http://warranty-query.newboomgroup.tw:8012/manager/login" },
+                { "type": "link", "name": "財政部稅籍資料公式查詢(覆核用戶提供的統編抬頭)", "url": "https://www.etax.nat.gov.tw/etwmain/etw113w1/ban/query" },
+                { "type": "link", "name": "91APP(realme網路商店，詢問關於系統操作、訂單退款、發票/刷卡等疑難雜症)", "url": "https://www.91app.com/contactus/" }
+            ]
+        }
+    ];
+
+    // ------------------- 資料處理 -------------------
+    function loadBookmarks() {
+        try {
+            const storedBookmarks = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
+            bookmarks = storedBookmarks ? JSON.parse(storedBookmarks) : initialBookmarks;
+        } catch (e) {
+            console.error("無法載入書籤:", e);
+            bookmarks = initialBookmarks;
+        }
+    }
+    function saveBookmarks() {
+        localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(bookmarks, null, 2));
+    }
+    function getFaviconUrl(url) {
+        try {
+            return `https://www.google.com/s2/favicons?sz=32&domain_url=${new URL(url).hostname}`;
+        } catch (e) {
+            return "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+        }
+    }
+
+    // ------------------- 渲染畫面 -------------------
+    function render() {
+        rootListElement.innerHTML = '';
+        renderNodes(bookmarks, rootListElement, []);
+    }
+    function renderNodes(nodes, parentElement, path) {
+        nodes.forEach((node, index) => {
+            const currentPath = [...path, index];
+            const li = document.createElement('li');
+            li.className = 'bookmark-item draggable-item';
+            li.dataset.path = JSON.stringify(currentPath);
+            li.draggable = true;
+            if (node.type === 'folder') {
+                li.appendChild(createFolderElement(node, currentPath));
+            } else {
+                li.appendChild(createLinkElement(node, currentPath));
+            }
+            parentElement.appendChild(li);
+        });
+    }
+    function createFolderElement(node, path) {
+        const details = document.createElement('details');
+        details.className = 'bookmark-folder-details';
+        details.open = node.isOpen;
+        details.addEventListener('toggle', () => { node.isOpen = details.open; saveBookmarks(); });
+        const summary = document.createElement('summary');
+        summary.className = 'bookmark-folder-summary';
+        const h3 = document.createElement('h3');
+        h3.textContent = node.name;
+        summary.append(h3, createControls(path));
+        const ul = document.createElement('ul');
+        ul.className = 'bookmark-list';
+        if (node.children) renderNodes(node.children, ul, path);
+        details.append(summary, ul, createFolderActions(path));
+        return details;
+    }
+    function createLinkElement(node, path) {
+        const a = document.createElement('a');
+        a.href = node.url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.className = 'bookmark-link';
+        const img = document.createElement('img');
+        img.src = getFaviconUrl(node.url);
+        img.alt = '';
+        img.className = 'bookmark-icon';
+        img.onerror = function() { this.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="; };
+        a.append(img, document.createTextNode(` ${node.name}`), createControls(path));
+        return a;
+    }
+    function createControls(path) {
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'item-controls';
+        const editBtn = document.createElement('button');
+        editBtn.className = 'control-btn';
+        editBtn.innerHTML = '✎';
+        editBtn.title = '編輯';
+        editBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); editItem(path); });
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'control-btn';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.title = '刪除';
+        deleteBtn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); deleteItem(path); });
+        controlsDiv.append(editBtn, deleteBtn);
+        return controlsDiv;
+    }
+    function createFolderActions(path) {
+        const folderActions = document.createElement('div');
+        folderActions.className = 'folder-actions';
+        const addLinkBtn = document.createElement('button');
+        addLinkBtn.textContent = '＋ 新增書籤';
+        addLinkBtn.className = 'add-btn';
+        addLinkBtn.addEventListener('click', e => { e.preventDefault(); addItem(path, 'link'); });
+        const addSubFolderBtn = document.createElement('button');
+        addSubFolderBtn.textContent = '＋ 新增子資料夾';
+        addSubFolderBtn.className = 'add-btn';
+        addSubFolderBtn.addEventListener('click', e => { e.preventDefault(); addItem(path, 'folder'); });
+        folderActions.append(addLinkBtn, addSubFolderBtn);
+        return folderActions;
+    }
+
+    // ------------------- 互動邏輯 -------------------
+    function getNodeAndParentArray(path) {
+        if (!path || path.length === 0) return { node: null, parentArray: bookmarks };
+        let parentArray = bookmarks;
+        for (let i = 0; i < path.length - 1; i++) {
+            const parentNode = parentArray[path[i]];
+            if (parentNode?.type === 'folder' && parentNode.children) {
+                 parentArray = parentNode.children;
+            } else { return { node: null, parentArray: null }; }
+        }
+        return { node: parentArray[path[path.length - 1]], parentArray };
+    }
+    function addItem(path, type) {
+        const { node } = getNodeAndParentArray(path);
+        const targetArray = path.length === 0 ? bookmarks : node.children;
+        const name = prompt(`請輸入新的${type === 'link' ? '書籤' : '資料夾'}名稱：`);
+        if (!name) return;
+        if (type === 'link') {
+            const url = prompt("請輸入網址 (URL)：", "https://");
+            if (!url) return;
+            targetArray.push({ type: 'link', name, url });
+        } else {
+            targetArray.push({ type: 'folder', name, children: [], isOpen: true });
+        }
+        saveAndRerender();
+    }
+    function editItem(path) {
+        const { node } = getNodeAndParentArray(path);
+        if (!node) return;
+        const newName = prompt("請輸入新的名稱：", node.name);
+        if (newName === null || newName === "") return;
+        node.name = newName;
+        if (node.type === 'link') {
+            const newUrl = prompt("請輸入新的網址：", node.url);
+            if (newUrl !== null) node.url = newUrl;
+        }
+        saveAndRerender();
+    }
+    function deleteItem(path) {
+        const { node, parentArray } = getNodeAndParentArray(path);
+        if (!node || !parentArray) return;
+        if (confirm(`確定要刪除 "${node.name}" 嗎？`)) {
+            parentArray.splice(path[path.length - 1], 1);
+            saveAndRerender();
+        }
+    }
+    function saveAndRerender() {
+        saveBookmarks();
+        render();
+    }
+
+    // ------------------- 拖曳邏輯 -------------------
+    let draggedElementPath = null;
+    document.addEventListener('dragstart', e => {
+        const target = e.target.closest('.draggable-item');
+        if (target) {
+            draggedElementPath = JSON.parse(target.dataset.path);
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => target.classList.add('dragging'), 0);
+        }
+    });
+    document.addEventListener('dragover', e => {
+        e.preventDefault();
+        const dropTargetItem = e.target.closest('.bookmark-item, .bookmark-folder-summary');
+        const dropTargetRoot = e.target.closest('#root-dropzone');
+        
+        document.querySelectorAll('.drop-target-item, .drop-target-root').forEach(el => 
+            el.classList.remove('drop-target-item', 'drop-target-root')
+        );
+
+        if (dropTargetItem) {
+            const targetElement = dropTargetItem.classList.contains('bookmark-folder-summary') ? 
+                dropTargetItem.closest('.bookmark-folder-details') : 
+                dropTargetItem;
+            targetElement.classList.add('drop-target-item');
+        } else if (dropTargetRoot) {
+            dropTargetRoot.classList.add('drop-target-root');
+        }
+    });
+    document.addEventListener('dragleave', e => {
+        const target = e.target.closest('.drop-target-item, .drop-target-root');
+        if (target && !target.contains(e.relatedTarget)) {
+            target.classList.remove('drop-target-item', 'drop-target-root');
+        }
+    });
+    document.addEventListener('dragend', () => {
+        document.querySelectorAll('.dragging, .drop-target-item, .drop-target-root').forEach(el => 
+            el.classList.remove('dragging', 'drop-target-item', 'drop-target-root')
+        );
+        draggedElementPath = null;
+    });
+    document.addEventListener('drop', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!draggedElementPath) return;
+
+        const dropTargetItem = e.target.closest('.bookmark-item, .bookmark-folder-summary');
+        const dropTargetRoot = e.target.closest('#root-dropzone');
+        let destinationPath;
+
+        if (dropTargetRoot) {
+            destinationPath = [bookmarks.length]; // 放到根目錄最後
+        } else if (dropTargetItem) {
+            const destinationPathStr = dropTargetItem.closest('.draggable-item').dataset.path;
+            const path = JSON.parse(destinationPathStr);
+            const { node: destNode } = getNodeAndParentArray(path);
+            if (destNode.type === 'folder' && JSON.stringify(draggedElementPath) !== destinationPathStr) {
+                 destinationPath = [...path, destNode.children.length]; // 放入資料夾
+            } else {
+                 destinationPath = path; // 排序
+            }
+        } else {
+            return;
+        }
+        
+        moveNode(draggedElementPath, destinationPath);
+        saveAndRerender();
+    });
+    
+    function moveNode(sourcePath, destinationPath) {
+        if (JSON.stringify(sourcePath) === JSON.stringify(destinationPath)) return;
+        if (JSON.stringify(destinationPath).startsWith(JSON.stringify(sourcePath))) return;
+
+        const { node: nodeToMove, parentArray: sourceParentArray } = getNodeAndParentArray(sourcePath);
+        if (!nodeToMove) return;
+        const sourceIndex = sourcePath[sourcePath.length - 1];
+        sourceParentArray.splice(sourceIndex, 1);
+
+        let adjustedDestPath = [...destinationPath];
+        const sourceParentPath = sourcePath.slice(0, -1);
+        const destParentPath = destinationPath.slice(0, -1);
+        if (JSON.stringify(sourceParentPath) === JSON.stringify(destParentPath) && sourceIndex < destinationPath[destinationPath.length - 1]) {
+            adjustedDestPath[adjustedDestPath.length - 1]--;
+        }
+
+        const { parentArray: destParentArray } = getNodeAndParentArray(adjustedDestPath);
+        if (!destParentArray) return;
+        const destIndex = adjustedDestPath[adjustedDestPath.length - 1];
+        destParentArray.splice(destIndex, 0, nodeToMove);
+    }
+    
+    // ------------------- 初始化 -------------------
+    addMainFolderBtn.addEventListener('click', () => addItem([], 'folder'));
+    addMainLinkBtn.addEventListener('click', () => addItem([], 'link'));
+    loadBookmarks();
+    render();
+});
+</script>
+
 </body>
 </html>
